@@ -37,4 +37,4 @@ Sistema de navegación *indoor* asistida por voz y sensores de proximidad (*beac
 * **Stevens Tene** - Doer / Developer
 * **Anderson Chimborazo** - Doer / Developer
 * **Mauricio Guaman** - Engineering Manager / Institutional mentor 
-
+* **Jandry Rosado** - Doer / Developer
