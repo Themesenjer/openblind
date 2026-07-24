@@ -31,7 +31,7 @@ Sistema de navegación *indoor* asistida por voz y sensores de proximidad (*beac
 * **Pablo Reyes** - Scrum Master / Developer
 * **Amialy Tamayo** - Doer / Developer
 * **Anibal Sarango** - Doer / Developer
-* **Steeven Pizarro** - Doer / Developer
+* **Steeven Pizarro Chuquimarca** - Doer / Developer
 * **Luis Mejia** - Doer / Developer
 * **Antony Guaman** - Doer / Developer
 * **Stevens Patricio Tene** - Doer / Developer
