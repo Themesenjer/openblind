@@ -1,3 +1,31 @@
+# Especificaciones Técnicas y Funcionales - OpenBlind
+
+## 1. Introducción y Propósito
+OpenBlind es una solución tecnológica modular diseñada para garantizar la accesibilidad visual de usuarios con discapacidad visual o baja visión en entornos digitales.
+
+---
+
+## 2. Historias de Usuario (Casos de Uso)
+
+### HU-01: Autenticación por Voz o Teclado
+* **Como:** Usuario con discapacidad visual.
+* **Quiero:** Iniciar sesión mediante comandos de voz o accesos directos de teclado.
+* **Para:** Acceder a la plataforma de forma autónoma sin depender de asistencia externa.
+
+### HU-02: Lectura Adaptativa de Módulos
+* **Como:** Usuario con baja visión.
+* **Quiero:** Que la interfaz ajuste automáticamente el contraste y el lector de pantalla procese el contenido clave.
+* **Para:** Navegar por los módulos del sistema de manera cómoda y sin fatiga visual.
+
+---
+
+## 3. Requisitos Funcionales (RF)
+*(Borrador en proceso por Célula 3)*
+* **RF-01:** Autenticación e inicio de sesión adaptativo.
+* **RF-02:** Interfaz navegable por lectores de pantalla y comandos de voz.
+* **RF-03:** Gestión y consulta de módulos principales de OpenBlind.
+
+---
 
 ## 4. Requisitos No Funcionales (RNF)
 
