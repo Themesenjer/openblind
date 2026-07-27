@@ -17,6 +17,8 @@ OpenBlind es una solución tecnológica modular diseñada para garantizar la acc
 * **Quiero:** Que la interfaz ajuste automáticamente el contraste y el lector de pantalla procese el contenido clave.
 * **Para:** Navegar por los módulos del sistema de manera cómoda y sin fatiga visual.
 
+### HU-03: historia de usuario 3
+
 ---
 
 ## 3. Requisitos Funcionales (RF)
