@@ -35,6 +35,6 @@ Sistema de navegación *indoor* asistida por voz y sensores de proximidad (*beac
 * **Luis Mejia** - Doer / Developer
 * **Antony Guaman** - Doer / Developer
 * **Stevens Patricio Tene** - Doer / Developer
-* **Anderson Chimborazo** - Doer / Developer
+* **Anderson Javier Chimborazo** - Doer / Developer
 * **Mauricio Guaman** - Engineering Manager / Institutional mentor 
 * **Jandry Rosado** - Doer / Developer
