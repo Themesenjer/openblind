@@ -17,15 +17,66 @@ OpenBlind es una solución tecnológica modular diseñada para garantizar la acc
 * **Quiero:** Que la interfaz ajuste automáticamente el contraste y el lector de pantalla procese el contenido clave.
 * **Para:** Navegar por los módulos del sistema de manera cómoda y sin fatiga visual.
 
-### HU-03: historia de usuario 3
-
 ---
 
-## 3. Requisitos Funcionales (RF)
-*(Borrador en proceso por Célula 3)*
+## 3. Requisitos Funcionales (RF) y Contrato de API
+
+### 3.1 Requisitos Funcionales
 * **RF-01:** Autenticación e inicio de sesión adaptativo.
 * **RF-02:** Interfaz navegable por lectores de pantalla y comandos de voz.
 * **RF-03:** Gestión y consulta de módulos principales de OpenBlind.
+
+### 3.2 Contrato de API (Endpoints Básicos)
+
+#### 🔑 1. Autenticación (Auth)
+* **POST `/api/auth/login`**
+  * **Petición (Frontend envía):**
+    ```json
+    {
+      "email": "usuario@openblind.com",
+      "password": "miPasswordSeguro"
+    }
+    ```
+  * **Respuesta Esperada (Backend devuelve 200 OK):**
+    ```json
+    {
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6...",
+      "user": {
+        "id": 1,
+        "nombre": "Juan Pérez",
+        "rol": "estudiante"
+      }
+    }
+    ```
+
+#### 👤 2. Gestión de Usuarios
+* **GET `/api/users/profile`** *(Requiere Token)*
+  * **Respuesta Esperada (Backend devuelve 200 OK):**
+    ```json
+    {
+      "id": 1,
+      "nombre": "Juan Pérez",
+      "email": "usuario@openblind.com",
+      "preferencias": {
+        "altoContraste": true,
+        "velocidadVoz": 1.2
+      }
+    }
+    ```
+
+#### 📚 3. Módulos del Sistema
+* **GET `/api/modules`**
+  * **Respuesta Esperada (Backend devuelve 200 OK):**
+    ```json
+    [
+      {
+        "id": 101,
+        "titulo": "Módulo de Accesibilidad Teclado",
+        "descripcion": "Atajos de teclado y navegación rápida",
+        "completado": false
+      }
+    ]
+    ```
 
 ---
 
