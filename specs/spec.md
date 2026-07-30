@@ -7,7 +7,7 @@ OpenBlind es una solución tecnológica modular diseñada para garantizar la acc
 
 ## 2. Historias de Usuario (Casos de Uso)
 
-### HU-01: Autenticación por Voz o Teclado
+### HU-01: Autenticacion por voz o teclado
 * **Como:** Usuario con discapacidad visual.
 * **Quiero:** Iniciar sesión mediante comandos de voz o accesos directos de teclado.
 * **Para:** Acceder a la plataforma de forma autónoma sin depender de asistencia externa.
@@ -16,6 +16,41 @@ OpenBlind es una solución tecnológica modular diseñada para garantizar la acc
 * **Como:** Usuario con baja visión.
 * **Quiero:** Que la interfaz ajuste automáticamente el contraste y el lector de pantalla procese el contenido clave.
 * **Para:** Navegar por los módulos del sistema de manera cómoda y sin fatiga visual.
+
+### HU-03: Descripción automática de contenido 
+* **Como:** usuario con discapacidad visual
+* **Quiero:** recibir descripciones automáticas de imágenes y elementos visuales
+* **Para:** comprender la información presentada en pantalla.
+
+### HU-04: Asistencia mediante voz
+* **Como:** usuario con discapacidad visual,
+* **Quiero:** controlar la aplicación mediante comandos de voz,
+* **Para:** interactuar con mayor facilidad.
+
+### HU-05: Perfil de accesibilidad
+* **Como:** usuario registrado
+* **Quiero:** guardar mis preferencias de accesibilidad
+* **Para:** no configurarlas cada vez que utilice la plataforma.
+
+### HU-06: Gestión de módulos
+* **Como:** administrador
+* **Quiero:** habilitar o deshabilitar módulos de accesibilidad
+* **Para:** adaptar la solución a las necesidades de cada organización.
+
+### HU-07: Evaluación de accesibilidad
+* **Como:** administrador de un sitio web
+* **Quiero:** analizar automáticamente el nivel de accesibilidad de las páginas
+* **Para:** identificar incumplimientos de estándares.
+
+### HU-08: Integración mediante API
+* **Como:** desarrollador
+* **Quiero:** integrar OpenBlind mediante APIs
+* **Para:** incorporar funcionalidades de accesibilidad en aplicaciones externas.
+
+### HU-09: Escalabilidad modular
+* **Como:** administrador del sistema
+* **Quiero:** incorporar nuevos módulos sin modificar la arquitectura principal
+* **Para:** mantener una solución flexible y escalable.
 
 ---
 
