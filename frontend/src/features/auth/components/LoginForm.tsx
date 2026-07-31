@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Field from "@/components/ui/Field";
 import Button from "@/components/ui/Button";
@@ -26,6 +27,7 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const router = useRouter();
 
   function handleChange<K extends keyof LoginValues>(field: K, value: LoginValues[K]) {
     setValues((prev) => ({ ...prev, [field]: value }));
@@ -41,10 +43,54 @@ export default function LoginForm() {
 
     setSubmitting(true);
     try {
-      // TODO: reemplazar por la llamada real al backend (POST /auth/login)
-      await new Promise((resolve) => setTimeout(resolve, 600));
-      console.log("Login payload", values);
-    } catch {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+
+      // Si no hay URL de backend configurada, simulamos un login exitoso localmente
+      if (!apiBase) {
+        const user = {
+          id: 1,
+          nombre: values.username,
+          email: values.username,
+          rol: "user",
+          creado_en: new Date().toISOString(),
+        };
+
+        if (values.remember) {
+          localStorage.setItem("user", JSON.stringify(user));
+        } else {
+          sessionStorage.setItem("user", JSON.stringify(user));
+        }
+
+        setSubmitting(false);
+        router.push("/dashboard");
+        return;
+      }
+
+      const res = await fetch(`${apiBase}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: values.username, password: values.password }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        setFormError(data?.message || "Credenciales inválidas.");
+        return;
+      }
+
+      const user = data?.user ?? data ?? null;
+
+      if (values.remember) {
+        localStorage.setItem("user", JSON.stringify(user));
+      } else {
+        sessionStorage.setItem("user", JSON.stringify(user));
+      }
+
+      router.push("/dashboard");
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Login error", err);
       setFormError("No se pudo iniciar sesión. Intenta nuevamente.");
     } finally {
       setSubmitting(false);
