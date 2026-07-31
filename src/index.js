@@ -1,24 +1,28 @@
 const express = require('express');
 const app = express();
 
-// Middleware para procesar JSON en las peticiones
+// 1.  Rutas
+const authRoutes = require('./routes/authRoutes');
+const mallaRoutes = require('./routes/mallaRoutes'); // Corregido: sin la 's' extra
+
+// 2. Middlewares
 app.use(express.json());
 
-// Importar rutas de autenticación (si las utilizas)
-const authRoutes = require('./routes/authRoutes');
+// 3. la API
 app.use('/api/auth', authRoutes);
+app.use('/api/mallas', mallaRoutes);
 
-// Base de datos temporal en memoria
+// Base de datos temporal
 let users = [
   { id: 1, nombre: "Pablo Reyes", email: "pablo@openblind.com" }
 ];
 
-// 1. OBTENER todos los usuarios (GET)
+// 1.  todos los usuarios (GET)
 app.get('/api/users', (req, res) => {
   res.status(200).json({ status: "Success", users });
 });
 
-// 2. CREAR un nuevo usuario (POST)
+// 2.  un nuevo usuario (POST)
 app.post('/api/users', (req, res) => {
   const { nombre, email } = req.body;
   
