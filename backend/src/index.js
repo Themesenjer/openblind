@@ -5,6 +5,10 @@ require('dotenv').config();
 // Importar el Pool de conexiones a PostgreSQL
 const pool = require('./config/db');
 
+// Importar middleware de errores y clase de error personalizada
+const errorHandler = require('./middlewares/errorHandler');
+const AppError = require('./utils/AppError');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -22,16 +26,13 @@ app.get('/api/health', (req, res) => {
 // -------------------------------------------------------------
 // 2 ENDPOINT: POST /api/auth/login (Autenticación)
 // -------------------------------------------------------------
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', async (req, res, next) => {
   const { email, password } = req.body;
 
   try {
     // Validar que se envíen los campos obligatorios
     if (!email || !password) {
-      return res.status(400).json({
-        status: 'Error',
-        message: 'Email y contraseña son obligatorios'
-      });
+      throw new AppError('Email y contraseña son obligatorios', 400);
     }
 
     // Consultar el usuario en PostgreSQL por email
@@ -39,20 +40,14 @@ app.post('/api/auth/login', async (req, res) => {
 
     // Si el correo no existe en la base de datos
     if (result.rows.length === 0) {
-      return res.status(401).json({
-        status: 'Error',
-        message: 'Credenciales inválidas (Usuario no existe)'
-      });
+      throw new AppError('Credenciales inválidas (Usuario no existe)', 401);
     }
 
     const usuario = result.rows[0];
 
     // Validar si la contraseña coincide
     if (usuario.password !== password) {
-      return res.status(401).json({
-        status: 'Error',
-        message: 'Credenciales inválidas (Contraseña incorrecta)'
-      });
+      throw new AppError('Credenciales inválidas (Contraseña incorrecta)', 401);
     }
 
     // Respuesta exitosa (JSON devuelto al Frontend)
@@ -69,18 +64,14 @@ app.post('/api/auth/login', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error en /api/auth/login:', error.message);
-    return res.status(500).json({
-      status: 'Error',
-      message: 'Error interno del servidor al autenticar'
-    });
+    next(error);
   }
 });
 
 // -------------------------------------------------------------
 // 3 ENDPOINT: GET /api/users (Obtener todos los usuarios)
 // -------------------------------------------------------------
-app.get('/api/users', async (req, res) => {
+app.get('/api/users', async (req, res, next) => {
   try {
     const result = await pool.query('SELECT id, nombre, email, rol, creado_en FROM usuarios ORDER BY id ASC');
 
@@ -90,11 +81,7 @@ app.get('/api/users', async (req, res) => {
       data: result.rows
     });
   } catch (error) {
-    console.error('Error en /api/users:', error.message);
-    return res.status(500).json({
-      status: 'Error',
-      message: 'Error interno al consultar usuarios'
-    });
+    next(error);
   }
 });
 
@@ -102,15 +89,12 @@ app.get('/api/users', async (req, res) => {
 // -------------------------------------------------------------
 // 4 ENDPOINT: POST /api/users (Crear usuario)
 // -------------------------------------------------------------
-app.post('/api/users', async (req, res) => {
+app.post('/api/users', async (req, res, next) => {
   const { nombre, email, password, rol } = req.body;
 
   try {
     if (!nombre || !email || !password || !rol) {
-      return res.status(400).json({
-        status: 'Error',
-        message: 'Nombre, email, password y rol son obligatorios'
-      });
+      throw new AppError('Nombre, email, password y rol son obligatorios', 400);
     }
 
     const existente = await pool.query(
@@ -119,10 +103,7 @@ app.post('/api/users', async (req, res) => {
     );
 
     if (existente.rows.length > 0) {
-      return res.status(409).json({
-        status: 'Error',
-        message: 'Ya existe un usuario con ese email'
-      });
+      throw new AppError('Ya existe un usuario con ese email', 409);
     }
 
     const result = await pool.query(
@@ -139,19 +120,14 @@ app.post('/api/users', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error en POST /api/users:', error.message);
-
-    return res.status(500).json({
-      status: 'Error',
-      message: 'Error interno al crear el usuario'
-    });
+    next(error);
   }
 });
 
 // -------------------------------------------------------------
 // 5 ENDPOINT: DELETE /api/users/:id (Eliminar usuario)
 // -------------------------------------------------------------
-app.delete('/api/users/:id', async (req, res) => {
+app.delete('/api/users/:id', async (req, res, next) => {
   const { id } = req.params;
 
   try {
@@ -163,10 +139,7 @@ app.delete('/api/users/:id', async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({
-        status: 'Error',
-        message: 'Usuario no encontrado'
-      });
+      throw new AppError('Usuario no encontrado', 404);
     }
 
     return res.status(200).json({
@@ -176,19 +149,14 @@ app.delete('/api/users/:id', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error en DELETE /api/users/:id:', error.message);
-
-    return res.status(500).json({
-      status: 'Error',
-      message: 'Error interno al eliminar el usuario'
-    });
+    next(error);
   }
 });
 
 // -------------------------------------------------------------
 // 6 ENDPOINT: GET /api/users/:id (Consultar usuario por ID)
 // -------------------------------------------------------------
-app.get('/api/users/:id', async (req, res) => {
+app.get('/api/users/:id', async (req, res, next) => {
   const { id } = req.params;
 
   try {
@@ -200,10 +168,7 @@ app.get('/api/users/:id', async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({
-        status: 'Error',
-        message: 'Usuario no encontrado'
-      });
+      throw new AppError('Usuario no encontrado', 404);
     }
 
     return res.status(200).json({
@@ -212,16 +177,14 @@ app.get('/api/users/:id', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error en GET /api/users/:id:', error.message);
-
-    return res.status(500).json({
-      status: 'Error',
-      message: 'Error interno al consultar el usuario'
-    });
+    next(error);
   }
 });
+
+// Middleware global de manejo de errores (SIEMPRE al final de las rutas)
+app.use(errorHandler);
 
 // Arrancar el servidor Express
 app.listen(PORT, () => {
   console.log(`🚀 Servidor ejecutándose en http://localhost:${PORT}`);
-});
+});
