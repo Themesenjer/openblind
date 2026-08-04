@@ -89,7 +89,7 @@ export default function LoginForm() {
 
       router.push("/dashboard");
     } catch (err) {
-      // eslint-disable-next-line no-console
+       // eslint-disable-next-line no-console
       console.error("Login error", err);
       setFormError("No se pudo iniciar sesión. Intenta nuevamente.");
     } finally {

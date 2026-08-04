@@ -27,56 +27,72 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-60 flex-col bg-[#0f172a] text-slate-300">
-      <div className="flex items-center gap-2 border-b border-slate-800 px-5 py-5">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2563eb] text-white">
-          <EyeIcon width={18} height={18} />
+    <aside className="fixed top-0 left-0 bottom-0 z-30 flex h-screen w-64 flex-col bg-[#0f172a] text-slate-300 border-r border-slate-800/80 shadow-xl overflow-y-auto">
+      {/* Brand Header */}
+      <div className="flex items-center gap-3 border-b border-slate-800/80 px-6 py-5">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-[#1d4ed8] to-[#2563eb] text-white shadow-md shadow-blue-500/20">
+          <EyeIcon width={20} height={20} />
         </span>
         <div>
-          <p className="text-sm font-bold text-white">OpenBlind</p>
-          <p className="text-xs text-slate-400">Vista de usuario</p>
+          <p className="text-base font-bold tracking-tight text-white">OpenBlind</p>
+          <p className="text-xs font-medium text-blue-400">Plataforma Accesible</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-3 border-b border-slate-800 px-5 py-4">
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2563eb] text-sm font-semibold text-white">
+      {/* User Profile Summary Card */}
+      <div className="flex items-center gap-3 border-b border-slate-800/80 px-6 py-4 bg-slate-900/40">
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2563eb] text-sm font-bold text-white shadow-sm ring-2 ring-blue-400/20">
           A
         </span>
-        <div>
-          <p className="text-sm font-semibold text-white">admin</p>
-          <p className="text-xs text-slate-400">Usuario estándar</p>
+        <div className="overflow-hidden">
+          <p className="text-sm font-semibold text-white truncate">admin</p>
+          <p className="text-xs text-slate-400 truncate">Usuario Activo</p>
         </div>
       </div>
 
-      <nav aria-label="Navegación principal" className="flex-1 space-y-1 px-3 py-4">
+      {/* Navigation List */}
+      <nav aria-label="Navegación principal" className="flex-1 space-y-1.5 px-3 py-5">
         {navItems.map(({ label, href, icon: Icon, badge }) => {
-          const active = pathname === href;
+          const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+          const IconComp = Icon || (() => null);
+
           return (
             <Link
               key={href}
               href={href}
               aria-current={active ? "page" : undefined}
-              className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors focus:outline-none focus-visible:outline-3 focus-visible:outline-[#f59e0b] focus-visible:outline-offset-2 ${
-                active ? "bg-[#2563eb] text-white" : "text-slate-300 hover:bg-slate-800 hover:text-white"
+              className={`group flex items-center justify-between rounded-xl px-3.5 py-3 text-sm font-medium transition-all duration-150 focus:outline-none focus-visible:ring-3 focus-visible:ring-amber-400 ${
+                active
+                  ? "bg-[#2563eb] text-white font-semibold shadow-md shadow-blue-600/25"
+                  : "text-slate-300 hover:bg-slate-800/90 hover:text-white"
               }`}
             >
-              <span className="flex items-center gap-3">
-                <Icon width={18} height={18} />
-                {label}
+              <span className="flex items-center gap-3.5">
+                <IconComp
+                  width={19}
+                  height={19}
+                  className={`transition-transform group-hover:scale-110 ${
+                    active ? "text-white" : "text-slate-400 group-hover:text-blue-400"
+                  }`}
+                />
+                <span>{label}</span>
               </span>
-              {badge && active && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+              {badge && active && (
+                <span className="h-2 w-2 rounded-full bg-white shadow-xs" />
+              )}
             </Link>
           );
         })}
       </nav>
 
-      <div className="border-t border-slate-800 px-3 py-4">
+      {/* Logout Action Footer */}
+      <div className="border-t border-slate-800/80 px-3 py-4 bg-slate-900/30">
         <button
           type="button"
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-400 transition-colors hover:bg-slate-800 focus:outline-none focus-visible:outline-3 focus-visible:outline-[#f59e0b] focus-visible:outline-offset-2"
+          className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-rose-400 transition-colors hover:bg-rose-500/10 hover:text-rose-300 focus:outline-none focus-visible:ring-3 focus-visible:ring-rose-400"
         >
           <LogoutIcon width={18} height={18} />
-          Salir
+          <span>Salir</span>
         </button>
       </div>
     </aside>
