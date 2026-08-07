@@ -2,7 +2,36 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { MicIcon, MicOffIcon, XIcon, SpeakerIcon, KeyboardIcon, CheckIcon } from "@/components/ui/icons";
+import { MicIcon, MicOffIcon, XIcon, SpeakerIcon, KeyboardIcon } from "@/components/ui/icons";
+
+interface SpeechRecognitionResultItem {
+  transcript: string;
+}
+
+interface SpeechRecognitionResult {
+  0: SpeechRecognitionResultItem;
+  isFinal: boolean;
+}
+
+interface SpeechRecognitionEvent {
+  resultIndex: number;
+  results: SpeechRecognitionResult[];
+}
+
+interface SpeechRecognitionErrorEvent {
+  error: string;
+}
+
+interface ISpeechRecognition {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
 
 // Decoupled voice command list for easy expansion
 const COMMAND_HELP_ITEMS = [
@@ -23,7 +52,7 @@ export default function VoiceCommandButton() {
   const router = useRouter();
 
   // Reference for SpeechRecognition instance
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<ISpeechRecognition | null>(null);
 
   // Helper for SpeechSynthesis (Screen reader vocal feedback)
   const speakFeedback = useCallback((text: string) => {
@@ -72,20 +101,22 @@ export default function VoiceCommandButton() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const windowObj = window as unknown as Record<string, unknown>;
+    const SpeechRecognitionCtor = (windowObj.SpeechRecognition || windowObj.webkitSpeechRecognition) as
+      | (new () => ISpeechRecognition)
+      | undefined;
 
-    if (!SpeechRecognition) {
-      setRecognitionSupported(false);
+    if (!SpeechRecognitionCtor) {
+      setTimeout(() => setRecognitionSupported(false), 0);
       return;
     }
 
-    const recognition = new SpeechRecognition();
+    const recognition = new SpeechRecognitionCtor();
     recognition.continuous = false;
     recognition.interimResults = true;
     recognition.lang = "es-ES";
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       const current = event.resultIndex;
       const resultText = event.results[current][0].transcript;
       setTranscript(resultText);
@@ -96,7 +127,7 @@ export default function VoiceCommandButton() {
       }
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.warn("Error en reconocimiento de voz:", event.error);
       setIsListening(false);
       if (event.error !== "no-speech") {
