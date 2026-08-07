@@ -112,7 +112,7 @@ OpenBlind es una solución tecnológica modular diseñada para garantizar la acc
              "creado_en": "2026-08-06T02:43:28.773Z"              
       }
     }
-     ...
+     
 
 #### 👤 2. Gestión de Usuarios
 
@@ -120,29 +120,29 @@ OpenBlind es una solución tecnológica modular diseñada para garantizar la acc
   * **Body de la petición (JSON):**
     
     ```json
-  {
+        {
 
-  "nombre": "Valentina Vega Actualizada",
-  "email": "valentina.actualizada@openblind.com",
-  "password": "654321",
-  "rol": "administrador"
-  }
+           "nombre": "Valentina Vega Actualizada",
+           "email": "valentina.actualizada@openblind.com",
+           "password": "654321",
+           "rol": "administrador"
+        }
     
   * **Respuesta del servidor (JSON):**  
       
     ```json
-  {
-     "status": "Success",
-     "message": "Usuario actualizado correctamente",
-     "data": {
-     "id": 22,
-     "nombre": "Valentina Vega Actualizada",
-     "email": "valentina.actualizada@openblind.com",
-     "rol": "administrador",
-     "creado_en": "2026-08-06T02:43:28.773Z"
-     }
-  }
-   ```
+        {
+           "status": "Success",
+           "message": "Usuario actualizado correctamente",
+           "data": {
+           "id": 22,
+           "nombre": "Valentina Vega Actualizada",
+           "email": "valentina.actualizada@openblind.com",
+           "rol": "administrador",
+           "creado_en": "2026-08-06T02:43:28.773Z"
+          }
+        }
+   
 
 #### 📚 3. Módulos del Sistema
 * **GET `http://localhost:3000/api/users/22`**
@@ -158,7 +158,7 @@ OpenBlind es una solución tecnológica modular diseñada para garantizar la acc
            "creado_en": "2026-08-06T02:43:28.773Z"
           }
         }
-         ...  
+           
 
 * **GET `http://localhost:3000/api/users/9`**
   * **Respuesta Esperada (Backend devuelve 200 OK):**
@@ -173,7 +173,7 @@ OpenBlind es una solución tecnológica modular diseñada para garantizar la acc
            "creado_en": "2026-07-31T23:03:12.245Z"
            }
         {   
-         ...
+         
 ---
 
 ## 4. Requisitos No Funcionales (RNF)
