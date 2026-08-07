@@ -33,7 +33,7 @@ Cada vez que utilices una IA (ChatGPT, Gemini, Claude, etc.) para generar códig
 ---
 
 ### 📅 03/08/2026 - Célula 1 (Frontend & Accesibilidad)
-* **Autor:** Stevens
+* **Autor:** Stevens Tene
 * **Rol / Célula:** Célula 1 - Frontend & Accesibilidad
 * **Herramienta IA:** Google Stitch / Gemini
 * **Objetivo:** Diseñar y prototipar los componentes interactivos `VoiceCommandButton` (Botón Flotante de Comandos de Voz) y `QuickAccessCard` (Tarjeta de Accesos Rápidos), garantizando la integración en Next.js App Router con estándares de accesibilidad universal WCAG 2.1 Nivel AA.
@@ -44,7 +44,7 @@ Cada vez que utilices una IA (ChatGPT, Gemini, Claude, etc.) para generar códig
 ---
 
 ### 📅 03/08/2026 - Célula 1 (Vista Centro de Ayuda)
-* **Autor:** Stevens
+* **Autor:** Stevens Tene
 * **Rol / Célula:** Célula 1 - Frontend & Accesibilidad
 * **Herramienta IA:** Google Stitch / Gemini
 * **Objetivo:** Crear la nueva pantalla interactiva del Centro de Ayuda (`/dashboard/ayuda`) replicando fielmente el diseño de prototipo entregado por el usuario, integrada con el flujo de navegación del Dashboard y Sidebar.
@@ -59,7 +59,7 @@ Cada vez que utilices una IA (ChatGPT, Gemini, Claude, etc.) para generar códig
 
 ---
 
-###  ~E 05/08/2026 - Célula 2 (Backend & Base de Datos)
+###   05/08/2026 - Célula 2 (Backend & Base de Datos)
 * **Autor:** Aníbal Ismael Sarango
 * **Rol / Célula:** Célula 2 - Backend & Base de Datos
 * **Herramienta IA:** Google Antigravity
@@ -112,7 +112,7 @@ Cada vez que utilices una IA (ChatGPT, Gemini, Claude, etc.) para generar códig
 ---
 
 
-###  ~E  06/08/2026 - CÉLULA 2 / BACKEND - ACTUALIZACIÓN PUT
+###   06/08/2026 - Celula 2 / backend - actualizacion PUT
 * **Autor:** Aníbal Ismael Sarango
 * **Rol / Célula:** Doer / Célula 2
 * **Herramienta IA:** Google Antigravity / ChatGPT

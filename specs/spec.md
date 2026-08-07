@@ -64,55 +64,116 @@ OpenBlind es una solución tecnológica modular diseñada para garantizar la acc
 ### 3.2 Contrato de API (Endpoints Básicos)
 
 #### 🔑 1. Autenticación (Auth)
-* **POST `/api/auth/login`**
+* **POST `http://localhost:3000/api/auth/login`**
   * **Petición (Frontend envía):**
     ```json
     {
-      "email": "usuario@openblind.com",
-      "password": "miPasswordSeguro"
+      "email": "prueba@openblind.com",
+      "password": "123456"
     }
     ```
   * **Respuesta Esperada (Backend devuelve 200 OK):**
     ```json
     {
-      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6...",
-      "user": {
-        "id": 1,
-        "nombre": "Juan Pérez",
-        "rol": "estudiante"
+       "status": "Success",
+         "message": "Inicio de sesión exitoso",
+           "user": {
+             "id": 16,
+            "nombre": "Usuario Prueba",
+          "email": "prueba@openblind.com",
+          "rol": "usuario",
+           "creado_en": "2026-08-04T23:11:03.708Z"              
       }
     }
     ```
+
+* **POST `http://localhost:3000/api/users`**
+  * **Petición (Frontend envía):**
+ 
+    ```json
+    {
+      "nombre": "Valentina Vega",
+      "email": "vale@openblind.com",
+      "password": "123456",
+      "rol": "usuario" 
+    }
+    ```
+  * **Respuesta Esperada (Backend devuelve 200 OK):**
+
+     ```json
+    {
+        "status": "Success",
+         "message": "Usuario creado correctamente",
+           "data": {
+             "id": 22,
+            "nombre": "Valentina Vega",
+           "email": "vale@openblind.com",
+           "rol": "usuario",
+             "creado_en": "2026-08-06T02:43:28.773Z"              
+      }
+    }
+     ...
 
 #### 👤 2. Gestión de Usuarios
-* **GET `/api/users/profile`** *(Requiere Token)*
-  * **Respuesta Esperada (Backend devuelve 200 OK):**
+
+* **PUT `http://localhost:3000/api/users/22`**
+  * **Body de la petición (JSON):**
+    
     ```json
-    {
-      "id": 1,
-      "nombre": "Juan Pérez",
-      "email": "usuario@openblind.com",
-      "preferencias": {
-        "altoContraste": true,
-        "velocidadVoz": 1.2
-      }
-    }
-    ```
+  {
+
+  "nombre": "Valentina Vega Actualizada",
+  "email": "valentina.actualizada@openblind.com",
+  "password": "654321",
+  "rol": "administrador"
+  }
+    
+  * **Respuesta del servidor (JSON):**  
+      
+    ```json
+  {
+     "status": "Success",
+     "message": "Usuario actualizado correctamente",
+     "data": {
+     "id": 22,
+     "nombre": "Valentina Vega Actualizada",
+     "email": "valentina.actualizada@openblind.com",
+     "rol": "administrador",
+     "creado_en": "2026-08-06T02:43:28.773Z"
+     }
+  }
+   ```
 
 #### 📚 3. Módulos del Sistema
-* **GET `/api/modules`**
+* **GET `http://localhost:3000/api/users/22`**
   * **Respuesta Esperada (Backend devuelve 200 OK):**
     ```json
-    [
-      {
-        "id": 101,
-        "titulo": "Módulo de Accesibilidad Teclado",
-        "descripcion": "Atajos de teclado y navegación rápida",
-        "completado": false
-      }
-    ]
-    ```
+        {
+           "status": "Success",
+           "data": {
+           "id": 22,
+           "nombre": "Valentina Vega Actualizada",
+           "email": "valentina.actualizada@openblind.com",
+           "rol": "administrador",
+           "creado_en": "2026-08-06T02:43:28.773Z"
+          }
+        }
+         ...  
 
+* **GET `http://localhost:3000/api/users/9`**
+  * **Respuesta Esperada (Backend devuelve 200 OK):**
+    ```json
+        {
+           "status": "Success",
+           "data": {
+           "id": 9,
+           "nombre": "Pedro Gómez",
+           "email": "pedro@openblind.com",
+           "rol": "usuario",
+           "creado_en": "2026-07-31T23:03:12.245Z"
+           }
+        {   
+         ...
 ---
 
 ## 4. Requisitos No Funcionales (RNF)
