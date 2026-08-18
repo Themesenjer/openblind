@@ -413,6 +413,16 @@ export function VolumeXIcon(props: IconProps) {
   );
 }
 
+export function KeyIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M21 2l-2 2m-3 1l-4 4M9 11a5 5 0 1 0 7 7l5-5V2h-5l-3 3-2-2z" />
+    </svg>
+  );
+}
+
+
+
 
 
 

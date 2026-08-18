@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const authController = require('../controllers/authController');
 
-// Ruta POST /api/auth/login
-router.post('/login', authController.login);
+// Si en authController solo tienes login, solo importa login
+const { login } = require('../controllers/authController');
+
+router.post('/login', login);
 
 module.exports = router;
