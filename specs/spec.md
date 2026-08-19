@@ -5,6 +5,21 @@ OpenBlind es una solución tecnológica modular diseñada para garantizar la acc
 
 ---
 
+## 2. Trabajo de concientización “ponte en sus zapatos”
+Este ejercicio proporciona un feetback con referencia a las necesidades que puede tener una persona con discapacidad visual al momento de interactuar con un dispositivo electrónico como celulares y computadoras, por eso el equipo de openblind hizo un trabajo de concientización poniéndonos en situación de personas con esta discapacidad para destacar los puntos mas importantes a tener en cuenta al momento de desarrollar este proyecto.
+* Las personas con discapacidad visual se les es imposible acceder a un dispositivo electrónico o interactuar con este sin ayuda previa
+* El texto en pantalla puede no ser accesible si no es compatible con lectores de pantalla.
+* Imágenes, fotografías, gráficos, mapas, capturas de pantalla o videos pueden no proporcionar información equivalente mediante audio o texto.
+* Gestos como deslizar, mantener presionado, arrastrar o tocar elementos pequeños pueden ser difíciles de ejecutar.
+* Una pantalla táctil no proporciona referencias físicas que permitan saber dónde está cada elemento.
+* Escribir en un teclado táctil puede ser más complicado porque las teclas no tienen referencias físicas, para esto se necesita teclados en braille pero son difíciles de conseguir.
+* Si no existe retroalimentación sonora o háptica, el usuario puede no saber si una acción fue realizada correctamente. 
+* La persona necesita información alternativa mediante audio, texto o interfaces accesibles.
+* Aplicaciones que requieren apuntar la cámara hacia un objeto pueden ser difíciles de utilizar si no proporcionan orientación auditiva o háptica.
+* Cualquier actividad requeriría asistencia por lo cual la automatización por voz seria esencial para el proyecto 
+
+---
+
 ## 2. Historias de Usuario (Casos de Uso)
 
 ### HU-01: Autenticacion por voz o teclado

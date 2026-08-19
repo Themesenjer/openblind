@@ -159,6 +159,45 @@ Cada vez que utilices una IA (ChatGPT, Gemini, Claude, etc.) para generar códig
 * **Resultado / Aplicación:** Se implementó PUT /api/users/:id, permitiendo actualizar completamente un usuario. Se agregaron validaciones para campos obligatorios, usuario inexistente y correo duplicado. El endpoint fue probado correctamente con respuestas HTTP 200, 400, 404 y 409.
 
 ---
+###   06/08/2026 - CÉLULA 2 / BACKEND - ACTUALIZACIÓN PATCH
+* **Autor:** Aníbal Ismael Sarango
+* **Rol / Célula:** Doer / Célula 2
+* **Herramienta IA:** Google Antigravity y ChatGPT
+* **Objetivo:** Implementar una actualización parcial de usuarios mediante PATCH.
+* **Prompt exacto utilizado:**
+  > Analiza el backend Express/Node actual de OpenBlind y propón la implementación del endpoint:
+  > PATCH /api/users/:id
+  > Objetivo:
+  > Permitir la actualización parcial de un usuario existente en PostgreSQL. El cliente podrá enviar uno o varios de estos campos:
+  >   • nombre 
+  >   • email 
+  >   • password 
+  >   • rol 
+  > Requisitos:
+  >   1. No todos los campos serán obligatorios. 
+  >   2. Debe enviarse al menos uno de los campos permitidos. 
+  >   3. Si el body está vacío o no contiene campos válidos, debe responder HTTP 400. 
+  >   4. Verifica primero que el usuario indicado por :id exista. 
+  >   5. Si el usuario no existe, responde HTTP 404 con el mensaje "Usuario no encontrado". 
+  >   6. Si se envía email, verifica que no pertenezca a otro usuario. 
+  >   7. Si el email ya pertenece a otro usuario, responde HTTP 409 con el mensaje "Ya existe un usuario con ese email". 
+  >   8. Actualiza únicamente los campos enviados. 
+  >   9. Utiliza consultas PostgreSQL parametrizadas. 
+  >  10. No incluyas password en la respuesta. 
+  >  11. La respuesta exitosa debe ser HTTP 200 con el formato JSON estándar Success. 
+  > Condiciones:
+  >   • Mantener PUT sin cambios. 
+  >   • No modificar endpoints existentes. 
+  >   • Reutilizar AppError, catchAsync y errorHandler. 
+  >   • Mantener separación entre rutas, controladores y middlewares. 
+  >   • Crear una función independiente para actualización parcial. 
+  >   • No realizar cambios en frontend. 
+  >   • No ejecutar git add, git commit ni git push. 
+  >   • Antes de cambiar archivos, presentar comportamiento, códigos HTTP, archivos, código, SQL parametrizado, payloads, pruebas y riesgos. 
+  >   • Esperar aprobación antes de aplicar cambios. 
+* **Resultado / Aplicación:** Antigravity realizó el análisis inicial. Se agregó controlador, middleware de validación y ruta PATCH. Se probaron casos 200, 400, 404 y 409. Posteriormente, el Scrum Master indicó que PATCH no se utilizará oficialmente por el momento y que se trabajará con PUT.
+
+---
 
 ### 📅 14/08/2026 - Célula 1 (Conexión Frontend - API Backend de Jandry)
 * **Autor:** Stevens
