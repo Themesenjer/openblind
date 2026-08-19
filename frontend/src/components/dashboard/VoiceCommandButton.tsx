@@ -128,10 +128,10 @@ export default function VoiceCommandButton() {
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      console.warn("Error en reconocimiento de voz:", event.error);
+      console.warn("SpeechRecognition status:", event.error);
       setIsListening(false);
-      if (event.error !== "no-speech") {
-        speakFeedback("No se pudo procesar el audio. Por favor intenta de nuevo.");
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        speakFeedback("Permiso de micrófono no otorgado. Puedes usar la lista de comandos con teclado.");
       }
     };
 
@@ -146,27 +146,28 @@ export default function VoiceCommandButton() {
   const toggleListening = useCallback(() => {
     if (isListening) {
       if (recognitionRef.current) {
-        recognitionRef.current.stop();
+        try {
+          recognitionRef.current.stop();
+        } catch {
+          // Ignore error
+        }
       }
       setIsListening(false);
       speakFeedback("Comandos de voz desactivados.");
     } else {
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.start();
-          setIsListening(true);
-          setTranscript("");
-          speakFeedback("Escuchando comandos de voz. Di un comando o presiona Alt mas V para cancelar.");
-        } catch (e) {
-          console.warn("Speech recognition busy or failed to start", e);
-          setIsListening(true);
-          speakFeedback("Escuchando comandos de voz.");
+      setIsListening(true);
+      setTranscript("");
+      speakFeedback("Escuchando comandos de voz.");
+
+      setTimeout(() => {
+        if (recognitionRef.current) {
+          try {
+            recognitionRef.current.start();
+          } catch (e) {
+            console.warn("Speech recognition start busy or skipped", e);
+          }
         }
-      } else {
-        // Fallback simulation mode for browsers without native Web Speech API support
-        setIsListening(true);
-        speakFeedback("Modo de comandos de voz activo. Selecciona un comando o usa el teclado.");
-      }
+      }, 400);
     }
   }, [isListening, speakFeedback]);
 
