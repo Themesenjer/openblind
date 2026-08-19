@@ -33,7 +33,7 @@ Cada vez que utilices una IA (ChatGPT, Gemini, Claude, etc.) para generar códig
 ---
 
 ### 📅 03/08/2026 - Célula 1 (Frontend & Accesibilidad)
-* **Autor:** Stevens Tene
+* **Autor:** Stevens
 * **Rol / Célula:** Célula 1 - Frontend & Accesibilidad
 * **Herramienta IA:** Google Stitch / Gemini
 * **Objetivo:** Diseñar y prototipar los componentes interactivos `VoiceCommandButton` (Botón Flotante de Comandos de Voz) y `QuickAccessCard` (Tarjeta de Accesos Rápidos), garantizando la integración en Next.js App Router con estándares de accesibilidad universal WCAG 2.1 Nivel AA.
@@ -44,7 +44,7 @@ Cada vez que utilices una IA (ChatGPT, Gemini, Claude, etc.) para generar códig
 ---
 
 ### 📅 03/08/2026 - Célula 1 (Vista Centro de Ayuda)
-* **Autor:** Stevens Tene
+* **Autor:** Stevens
 * **Rol / Célula:** Célula 1 - Frontend & Accesibilidad
 * **Herramienta IA:** Google Stitch / Gemini
 * **Objetivo:** Crear la nueva pantalla interactiva del Centro de Ayuda (`/dashboard/ayuda`) replicando fielmente el diseño de prototipo entregado por el usuario, integrada con el flujo de navegación del Dashboard y Sidebar.
@@ -59,7 +59,21 @@ Cada vez que utilices una IA (ChatGPT, Gemini, Claude, etc.) para generar códig
 
 ---
 
-###   05/08/2026 - Célula 2 (Backend & Base de Datos)
+### 📅 05/08/2026 - Célula 1 (Frontend & Accesibilidad - Componentes Stitch & Next.js)
+* **Autor:** Stevens
+* **Rol / Célula:** Célula 1 - Frontend & Accesibilidad
+* **Herramienta IA:** Google Stitch / Next.js
+* **Objetivo:** Refinar y acoplar en el entorno local de Next.js los componentes de UI accesibles de OpenBlind: `VoiceCommandButton` (Botón Flotante con Reconocimiento de Voz y Modal de Comandos), `QuickAccessCard` (Tarjetas de Acceso Rápido con Atajos Alt y Variantes de Acento) y la navegación accesible (`Sidebar` y `Navbar` con atajos de accesibilidad y foco de alto contraste).
+* **Prompt exacto utilizado:**
+  > "Diseña y refina en Google Stitch los componentes visuales e interactivos de accesibilidad universal para la plataforma OpenBlind en Next.js App Router y Tailwind CSS:
+  > 1. Botón Flotante de Comandos de Voz (VoiceCommandButton): Ubicado en la esquina inferior derecha, con indicador visual en tiempo real de estado de escucha (ondas/badge animado), retroalimentación auditiva mediante Web Speech API (SpeechSynthesis y SpeechRecognition), región viva aria-live='assertive' para lectores de pantalla, atajo global de teclado Alt + V, y un drawer/modal interactivo accesible que despliega la guía completa de comandos de voz admitidos ("Ir a módulos", "Lector inteligente", "Historial", "Accesibilidad", "Ayuda", "Perfil").
+  > 2. Tarjetas de Acceso Rápido (QuickAccessCard): Formato modular accesible <article> con soporte de variantes de color (azul, verde, púrpura, ámbar, rosa, pizarra), indicadores de atajos de teclado visuales (Alt + 1 al 6), y anillo de enfoque visible de alto contraste (focus-visible:ring-4 focus-visible:ring-amber-400) optimizado para navegación por teclado y lectores de pantalla.
+  > 3. Navegación Accesible (Sidebar & Navbar): Menú lateral estático oscuro (#0f172a) con estado activo destacado, distintivos visuales, navegación semántica <nav aria-label="..."> y barra superior con accesos directos de alto contraste y tamaño de fuente ajustables. Proporciona la estructura TypeScript modular e intégrala en el entorno local Next.js."
+* **Resultado / Aplicación:** Acoplamiento exitoso de `VoiceCommandButton.tsx`, `QuickAccessCard.tsx`, `Sidebar.tsx` y `Navbar.tsx` en `frontend/src/components/`, verificación en `frontend/src/app/(app)/dashboard/page.tsx` y compilación sin errores (`npm run build` exitoso).
+
+---
+
+### 📅 05/08/2026 - Célula 2 (Backend & Base de Datos)
 * **Autor:** Aníbal Ismael Sarango
 * **Rol / Célula:** Célula 2 - Backend & Base de Datos
 * **Herramienta IA:** Google Antigravity
@@ -145,3 +159,12 @@ Cada vez que utilices una IA (ChatGPT, Gemini, Claude, etc.) para generar códig
 * **Resultado / Aplicación:** Se implementó PUT /api/users/:id, permitiendo actualizar completamente un usuario. Se agregaron validaciones para campos obligatorios, usuario inexistente y correo duplicado. El endpoint fue probado correctamente con respuestas HTTP 200, 400, 404 y 409.
 
 ---
+
+### 📅 14/08/2026 - Célula 1 (Conexión Frontend - API Backend de Jandry)
+* **Autor:** Stevens
+* **Rol / Célula:** Célula 1 - Frontend & Accesibilidad
+* **Herramienta IA:** Antigravity / Next.js
+* **Objetivo:** Configurar las variables de entorno en `.env.local` con `NEXT_PUBLIC_API_URL` apuntando a `http://localhost:5000` para habilitar el consumo End-to-End de la API de autenticación (`POST /api/auth/login`) desde la interfaz accesible y documentar la colección de pruebas en Postman.
+* **Prompt exacto utilizado:**
+  > "Configura el archivo .env.local en la raíz de Next.js definiendo NEXT_PUBLIC_API_URL=http://localhost:5000 para enlazar el consumo de peticiones POST fetch desde LoginForm.tsx hacia la API de Jandry, y proporciona la guía paso a paso para probar los endpoints POST /api/auth/login y GET /api/health en Postman."
+* **Resultado / Aplicación:** Creación de `frontend/.env.local`, cambio de puerto del backend a 5000 para evitar conflictos y guía completa de consumo en Postman.
