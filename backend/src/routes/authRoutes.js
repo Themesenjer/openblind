@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const authController = require('../controllers/authController');
+const { validateLoginInput } = require('../middlewares/validationMiddleware');
 
-// Si en authController solo tienes login, solo importa login
-const { login } = require('../controllers/authController');
-
-router.post('/login', login);
+// Ruta POST /api/auth/login
+router.post('/login', validateLoginInput, authController.login);
 
 module.exports = router;
