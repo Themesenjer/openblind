@@ -207,3 +207,61 @@ Cada vez que utilices una IA (ChatGPT, Gemini, Claude, etc.) para generar códig
 * **Prompt exacto utilizado:**
   > "Configura el archivo .env.local en la raíz de Next.js definiendo NEXT_PUBLIC_API_URL=http://localhost:5000 para enlazar el consumo de peticiones POST fetch desde LoginForm.tsx hacia la API de Jandry, y proporciona la guía paso a paso para probar los endpoints POST /api/auth/login y GET /api/health en Postman."
 * **Resultado / Aplicación:** Creación de `frontend/.env.local`, cambio de puerto del backend a 5000 para evitar conflictos y guía completa de consumo en Postman.
+
+---
+
+###   17/08/2026 - Célula 1 (Frontend & Accesibilidad - Lectura de Respuestas Backend con SpeechSynthesis y Atributos WCAG)
+* **Autor:** Stevens
+* **Rol / Célula:** Célula 1 - Frontend & Accesibilidad
+* **Herramienta IA:** Google Stitch / Next.js
+* **Objetivo:** Refinar los componentes de interfaz en Google Stitch incluyendo atributos explícitos de accesibilidad (aria-label, aria-live, aria-describedby, aria-expanded, role) e indicado>
+* **Prompt exacto utilizado:**
+  >  "Diseña y refina en Google Stitch componentes de UI accesibles para la plataforma OpenBlind en Next.js App Router y Tailwind CSS que incorporen estándares universales WCAG 2.1 Nivel AA:
+  >   1. Atributos de Accesibilidad y Foco de Teclado: Todos los componentes interactivos (botones, enlaces, modales y campos de entrada) deben incluir atributos semánticos explícitos (aria-l>
+  >   2. Lectura Parlante Nativa con window.speechSynthesis: Implementar una utilidad nativa en JavaScript de 3 líneas de código que reciba las respuestas HTTP y mensajes JSON devueltos por l>
+  >      const utterance = new SpeechSynthesisUtterance(textoRespuestaBackend);
+  >      utterance.lang = 'es-ES';
+  >      window.speechSynthesis.speak(utterance);
+  >   3. Integración en Flujos de Autenticación y Lector Adaptativo: Aplicar esta voz en el login al recibir respuestas del servidor y en el lector inteligente para la lectura continua sincro>
+* **Resultado / Aplicación:** Registro del prompt en prompts.md, verificación de la función speakFeedback basada en window.speechSynthesis en LoginForm.tsx y LectorInteligentePage.tsx, e inte>
+
+---
+
+###   18/08/2026 - Célula 1 (Frontend & Accesibilidad - Flujo de Login Accesible con SpeechSynthesis y Navegación por Teclado)
+* **Autor:** Stevens
+* **Rol / Célula:** Célula 1 - Frontend & Accesibilidad
+* **Herramienta IA:** Antigravity / Next.js
+* **Objetivo:** Culminar la implementación del flujo de Login accesible en Next.js, integrando los eventos de voz mediante la API nativa window.speechSynthesis (lectura hablada al recibir foc>
+* **Prompt exacto utilizado:**
+  >  "Steven continúa con la implementación del flujo de Login accesible en Next.js, integrando los eventos de voz (speechSynthesis) y la navegación por teclado."
+* **Resultado / Aplicación:** Actualización completa de frontend/src/features/auth/components/LoginForm.tsx, integración de listeners onFocus que invocan speechSynthesis en español (es-ES), g>
+
+---
+
+###   19/08/2026 - Célula 2 (Script de Datos de Prueba Seed SQL & Colección Postman)
+* **Autor:** Jandry / Aníbal Sarango
+* **Rol / Célula:** Célula 2 - Backend & Base de Datos, potsman
+* **Herramienta IA:** Antigravity / PostgreSQL
+* **Objetivo:** Crear el script de población automatizada de base de datos (seed.js / seed.sql) con 7 usuarios de prueba de distintos roles y generar la colección oficial de Postman para prue>
+* **Prompt exacto utilizado:**
+  >  "Crea un script de automatización en Node.js (backend/src/config/seed.js) y un archivo SQL (backend/seed.sql) para poblar la base de datos PostgreSQL de OpenBlind con 7 usuarios de prueb>
+* **Resultado / Aplicación:** Creación de backend/seed.sql y backend/src/config/seed.js, poblamiento exitoso de la base de datos y entrega de la colección de pruebas en Postman para el equipo.
+
+---
+
+###   20/08/2026 - Célula 1 (Conexión E2E de Login Accesible con API Backend y SpeechSynthesis)
+* **Autor:** Steven Andrade
+* **Rol / Célula:** Célula 1 - Frontend & Accesibilidad (Líder)
+* **Herramienta IA:** Antigravity / Next.js / Express.js
+* **Objetivo:** Lograr la integración End-to-End (E2E) completa del flujo de Login y Autenticación entre el Frontend (Next.js) y la API del Backend (Express + PostgreSQL), asegurando que la c>
+* **Prompt exacto utilizado:**
+  >  "Conectar el flujo del Login en Next.js consumiendo los datos reales de la API en el Backend (http://localhost:5000/api/auth/login). Validar que la voz del navegador (speechSynthesis) pr>
+* **Resultado / Aplicación:**
+    1. Conexión E2E funcional entre LoginForm.tsx y POST /api/auth/login.
+    2. Implementación de respuestas estandarizadas con speechMessage en backend/src/index.js, backend/src/utils/AppError.js y backend/src/middlewares/errorHandler.js.
+    3. Carga y reproducción automática del mensaje hablado mediante window.speechSynthesis.speak().
+    4. Creación del script de datos de prueba backend/src/config/seed.js y backend/seed.sql con 7 usuarios de prueba.
+    5. Compilación del proyecto (next build) verificada y exitosa.
+
+---
+

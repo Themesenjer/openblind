@@ -20,7 +20,7 @@ Este ejercicio proporciona un feetback con referencia a las necesidades que pued
 
 ---
 
-## 2. Historias de Usuario (Casos de Uso)
+## 3. Historias de Usuario (Casos de Uso)
 
 ### HU-01: Autenticacion por voz o teclado
 * **Como:** Usuario con discapacidad visual.
@@ -69,14 +69,80 @@ Este ejercicio proporciona un feetback con referencia a las necesidades que pued
 
 ---
 
-## 3. Requisitos Funcionales (RF) y Contrato de API
+## 4. Solicitud de Documentación Técnica y Manuales de Usuario: Módulos de Accesibilidad y Perfil en OpenBlind (Frontend)
 
-### 3.1 Requisitos Funcionales
+elaborar la documentación técnica, las guías de arquitectura y el manual de usuario final para las nuevas pantallas y sistemas adaptativos implementados en el frontend de la plataforma *OpenB>
+A continuación se detallan las especificaciones técnicas, componentes modificados/creados y requerimientos funcionales:
+
+### 1.  ~@esumen de Cambios e Implementaciones
+
+Se han integrado dos nuevos módulos principales en el dashboard adaptativo:
+1. **Configuración de Accesibilidad (/dashboard/accesibilidad):** Panel interactivo para personalizar la experiencia de navegación (lector de pantalla, alto contraste, modo oscuro, texto gran>
+2. **Mi Perfil (/dashboard/perfil):** Vista interactiva del perfil de usuario con estadísticas de aprendizaje, modales de edición de datos y cambio de contraseña con medidor de fortaleza de c>
+3. **Remoción de Vistas obsoletas:** Se eliminó de la interfaz cualquier referencia o botón de "Vista de usuario" / "Vista admin".
+4. **Estabilidad de Layout (Zero Layout Shift):** Mantenimiento de la barra lateral fija (w-64) para asegurar navegabilidad continua sin saltos de interfaz.
+
+### 2.  M- ️rquitectura Técnica y Estado Global
+
+#### Componentes y Archivos Clave:
+* **src/features/accessibility/AccessibilityContext.tsx:** Provider global que administra el estado de accesibilidad, la persistencia en localStorage (openblind_accessibility_settings) y la i>
+* **src/app/globals.css:** Hoja de estilos globales enriquecida con variantes personalizadas:
+   - @custom-variant dark: Desacopla el modo oscuro de la preferencia del SO y lo vincula estrictamente a la clase .dark.
+   - html.high-contrast: Fuerza fondo negro puro (#000000), fuentes blancas (#ffffff) y bordes/enfoque en amarillo vivo (#facc15).
+   - html.large-text: Escala tipográfica base (font-size: 118%).
+   - html.keyboard-nav: Anillos de enfoque mejorados para navegación con teclado (:focus-visible).
+   - html[data-accent="..."]: Sobrescritura dinámica del color de acento primario (Azul, Verde, Violeta, Naranja).
+* **src/app/(app)/dashboard/accesibilidad/page.tsx:** Pantalla principal de ajustes de accesibilidad.
+* **src/app/(app)/dashboard/perfil/page.tsx:** Pantalla de gestión de perfil e interacción.
+* **src/components/dashboard/VoiceCommandButton.tsx:** Botón flotante y listener de comandos por voz sincronizado con el contexto global.
+* **src/components/layout/Sidebar.tsx:** Menú de navegación fijo adaptativo.
+
+### 3. ⚙️Especificaciones Funcionales por Módulo
+
+#### A. Módulo de Accesibilidad (/dashboard/accesibilidad)
+* **Lector de Pantalla:** Activa/desactiva las locuciones sonoras y retroalimentación auditiva en tiempo real.
+* **Modo Alto Contraste:** Conmuta la clase .high-contrast garantizando contraste máximo según norma WCAG 2.1 AA.
+* **Modo Oscuro:** Alterna el tema visual entre claro y oscuro mediante la clase .dark.
+* **Texto Grande:** Ajusta la escala de fuente global mediante .large-text.
+* **Comandos de Voz:** Muestra/oculta el listener de voz flotante (Alt + V).
+* **Navegación por Teclado:** Intensifica los anillos de enfoque en botones e insumos interactivos.
+* **Audio y Voz:**
+   - Velocidad de Lectura: Slider de 0.5x a 2.0x (Valor por defecto: 1.2x).
+   - Volumen: Slider de 0% a 100% (Valor por defecto: 80%).
+* **Idioma del Lector:** Tarjetas seleccionables para es-ES (España), es-MX (México), en-US (Estados Unidos) y pt-BR (Brasil).
+* **Color de Acento:** Selección dinámica entre Azul (#2563eb), Verde (#16a34a), Violeta (#9333ea) y Naranja (#ea580c).
+* **Acciones:** Botones "Guardar cambios" y "Restablecer" con avisos por voz y notificaciones toast.
+#### B. Módulo Mi Perfil (/dashboard/perfil)
+* **Cabecera de Avatar:** Iniciales del usuario (do / C), botón para editar avatar e insignia de "Usuario verificado".
+* **Tarjetas de Datos:** Nombre Completo (Carlos), Correo Electrónico (carlos@openblind.app), Fecha de Registro (15 de enero, 2025) y Rol (Usuario estándar).
+* **Modal Editar Perfil:** Formulario modal para actualizar nombre y correo en tiempo real con validación y confirmación auditiva.
+* **Modal Cambiar Contraseña:** Campo de clave con conmutador para ver/ocultar texto y medidor dinámico de fortaleza (Débil, Media, Fuerte).
+* **Estadísticas de Aprendizaje:** Indicadores interactivos de módulos completados (12/15), horas de lectura adaptativa con racha activa ( M-% 5 días seguidos) y comandos de voz ejecutados (8>
+
+### 4.  Cumplimiento de Estándares de Accesibilidad (WCAG 2.1 AA)
+Por favor destacar en el manual los siguientes aspectos de accesibilidad implementados:
+1. **Regiones en vivo (aria-live="polite" / assertive)**: Notificaciones en segundo plano leídas automáticamente por software lector de pantalla (NVDA, VoiceOver, JAWS).
+2. **Atajos globales de teclado:** Soporte para Alt + V (Comandos de voz), Escape (Cerrar modales) y Tab con foco amarillo visible.
+3. **Contrastes de Color:** Verificados ratios de contraste mayores a 7:1 en modo alto contraste.
+
+## 5.  M-* Guía de Pruebas y Validación (QA)
+Solicitamos incluir los siguientes escenarios en el plan de pruebas:
+* **Prueba 1:** Navegar a /dashboard/accesibilidad desde el menú lateral y verificar que no ocurra ningún salto visual (layout shift).
+* **Prueba 2:** Activar y desactivar el Modo Oscuro en un sistema operativo con tema oscuro activo, verificando que responda únicamente al interruptor de la app.
+* **Prueba 3:** Seleccionar el color de acento Verde o Violeta y confirmar que los botones e indicadores en toda la app cambien inmediatamente de color.
+* **Prueba 4:** Navegar a /dashboard/perfil, abrir el modal "Editar perfil", guardar cambios y validar que se emita la locución sonora y la notificación toast.
+* **Prueba 5:** Probar el modal "Cambiar contraseña" introduciendo claves cortas e inseguras para verificar el medidor de fortaleza.
+
+---
+
+## 5. Requisitos Funcionales (RF) y Contrato de API
+
+### 5.1 Requisitos Funcionales
 * **RF-01:** Autenticación e inicio de sesión adaptativo.
 * **RF-02:** Interfaz navegable por lectores de pantalla y comandos de voz.
 * **RF-03:** Gestión y consulta de módulos principales de OpenBlind.
 
-### 3.2 Contrato de API (Endpoints Básicos)
+### 5.2 Contrato de API (Endpoints Básicos)
 
 #### 🔑 1. Autenticación (Auth)
 * **POST `http://localhost:3000/api/auth/login`**
@@ -191,7 +257,7 @@ Este ejercicio proporciona un feetback con referencia a las necesidades que pued
          
 ---
 
-## 4. Requisitos No Funcionales (RNF)
+## 6. Requisitos No Funcionales (RNF)
 
 * **RNF-01: Accesibilidad Universal (WCAG 2.1 - Nivel AA)**  
   El sistema debe cumplir estrictamente con las pautas de accesibilidad para contenido web, garantizando navegación completa mediante teclado, alto contraste de elementos visuales y compatibilidad con lectores de pantalla (NVDA, TalkBack, VoiceOver).
