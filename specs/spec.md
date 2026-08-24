@@ -166,14 +166,14 @@ Solicitamos incluir los siguientes escenarios en el plan de pruebas:
         "nombre": "Usuario Prueba",
         "email": "prueba@openblind.com",
         "rol": "user",
-        "creado_en": "2026-08-20T10:00:00.000Z
+        "creado_en": "2026-08-06T02:43:28.773Z"
               
       }
     }
     ```
   * **Respuesta de Error**
-       • 400 Bad Request: "Email y contraseña son obligatorios"
-       • 401 Unauthorized: "Credenciales inválidas, el usuario no existe" / "Credenciales inválidas, contraseña incorrecta"
+           • 400 Bad Request: "Email y contraseña son obligatorios"
+           • 401 Unauthorized: "Credenciales inválidas, el usuario no existe" / "Credenciales inválidas, contraseña incorrecta"
 
 
 * **POST `http://localhost:3000/api/users`**
@@ -205,9 +205,8 @@ Solicitamos incluir los siguientes escenarios en el plan de pruebas:
 
   * **Respuesta de Error**
  
-       • 400 Bad Request: "Nombre, email y password son obligatorios"
-       • 409 Conflict: "Ya existe un usuario con ese correo electrónico"
-
+           • 400 Bad Request: "Nombre, email y password son obligatorios"
+           • 409 Conflict: "Ya existe un usuario con ese correo electrónico"
 
 
 #### 👤 2. Gestión de Usuarios
@@ -242,8 +241,8 @@ Solicitamos incluir los siguientes escenarios en el plan de pruebas:
         ```
 
   * **Respuesta de Error**
-       • 400 Bad Request: "Nombre y email son obligatorios"
-       • 404 Not Found: "Usuario no encontrado para actualizar"
+           • 400 Bad Request: "Nombre y email son obligatorios"
+           • 404 Not Found: "Usuario no encontrado para actualizar"
 
 
 * **PUT `http://localhost:3000/api/users/8`**
@@ -268,9 +267,9 @@ Solicitamos incluir los siguientes escenarios en el plan de pruebas:
 
 
   * **Respuestas de Error:**
-       • 400 Bad Request: "La contraseña actual y la nueva contraseña son obligatorias"
-       • 401 Unauthorized: "La contraseña actual es incorrecta"
-       • 404 Not Found: "Usuario no encontrado"
+           • 400 Bad Request: "La contraseña actual y la nueva contraseña son obligatorias"
+           • 401 Unauthorized: "La contraseña actual es incorrecta"
+           • 404 Not Found: "Usuario no encontrado"
 
 
 
