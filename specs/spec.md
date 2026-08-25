@@ -171,6 +171,7 @@ Solicitamos incluir los siguientes escenarios en el plan de pruebas:
       }
     }
     ```
+
   * **Respuesta de Error**
            • 400 Bad Request: "Email y contraseña son obligatorios"
            • 401 Unauthorized: "Credenciales inválidas, el usuario no existe" / "Credenciales inválidas, contraseña incorrecta"
@@ -203,10 +204,37 @@ Solicitamos incluir los siguientes escenarios en el plan de pruebas:
      }
      ```
 
-  * **Respuesta de Error**
- 
+  * **Respuesta de Error** 
            • 400 Bad Request: "Nombre, email y password son obligatorios"
            • 409 Conflict: "Ya existe un usuario con ese correo electrónico"
+
+
+* **POST `https://moistness-letter-strainer.ngrok-free.dev/api/auth/login`**
+  * **Petición (Frontend envía):**
+      ```json
+      {
+         "email": "valentina.actualizada@openblind.com",
+         "password": "123456"
+      }
+      ```
+
+  * **Respuesta Esperada (Backend devuelve 200 OK):**
+
+      ```json
+      {
+         "status": "Success",
+         "message": "Inicio de sesión exitoso",
+         "speechMessage": "Bienvenido Valentina Vega. Inicio de sesión exitoso. Redirigiendo a tu panel de control.",
+         "user": {
+         "id": 25,
+         "nombre": "Valentina Vega",
+         "email": "valentina.actualizada@openblind.com",
+         "rol": "usuario",
+         "creado_en": "2026-08-07T00:52:48.148Z"
+         }
+
+      }
+      ```
 
 
 #### 👤 2. Gestión de Usuarios
@@ -219,7 +247,7 @@ Solicitamos incluir los siguientes escenarios en el plan de pruebas:
 
            "nombre": "Valentina Vega",
            "email": "valentinaactualizada@openblind.com",
-           "password": "654321",
+           "password": "123456",
            "rol": "administrador"
         }
         ```
@@ -240,6 +268,7 @@ Solicitamos incluir los siguientes escenarios en el plan de pruebas:
         }
         ```
 
+
   * **Respuesta de Error**
            • 400 Bad Request: "Nombre y email son obligatorios"
            • 404 Not Found: "Usuario no encontrado para actualizar"
@@ -250,8 +279,8 @@ Solicitamos incluir los siguientes escenarios en el plan de pruebas:
 
     ```json
         {         
-           "currentPassword": "123",
-           "newPassword": "456"
+           "currentPassword": "123456",
+           "newPassword": "456789"
         
         }
         ```
