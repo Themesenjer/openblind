@@ -265,3 +265,93 @@ Cada vez que utilices una IA (ChatGPT, Gemini, Claude, etc.) para generar códig
 
 ---
 
+###   28/08/2026 - Célula 1 (Cliente API Centralizado & Gestión JWT)
+* **Autor:** Stevens
+* **Rol / Célula:** Célula 1 - Frontend & Backend (Doer / Developer)
+* **Herramienta IA:** Antigravity (Gemini 3.6 Flash / Pro)
+* **Objetivo:** Implementar un cliente de API centralizado en TypeScript (lib/api.ts) para gestionar la URL base del Backend, el almacenamiento seguro de tokens JWT (openblind_token) en localStorage/sessionStorage y la inyección automatizada del encabezado HTTP Authorization: Bearer <token> en todas las peticiones protegidas.
+* **Prompt exacto utilizado:**
+  >  "Crea y optimiza el módulo helper /frontend/src/lib/api.ts en TypeScript para conectar el Frontend Next.js con el Backend Express/PostgreSQL de OpenBlind. Debe incluir:
+  >   getApiBase() para obtener la URL base limpia evitando duplicaciones de la ruta /api.
+  >   Funciones getAuthToken(), setAuthToken(token, remember) y removeAuthToken() para gestionar el token JWT en localStorage o sessionStorage.
+  >   La función asíncrona fetchWithAuth(endpoint, options) que inyecte automáticamente Content-Type: application/json y Authorization: Bearer <token> en todas las peticiones a rutas protegidas, manejando de forma limpia respuestas JSON y caídas de servidor."
+
+---
+
+###   28/08/2026 - Célula 1 (Autenticación y Captura de Token JWT)
+* **Autor:** Stevens
+* **Rol / Célula:** Célula 1 - Frontend & Backend (Doer / Developer)
+* **Herramienta IA:** Antigravity (Gemini 3.6 Flash / Pro)
+* **Objetivo:** Conectar las pantallas de inicio de sesión (LoginForm.tsx) y registro (RegisterForm.tsx) con los endpoints /api/auth/login y /api/auth/register, capturando el token JWT devuelto, manejando contraseñas encriptadas con Bcryptjs y leyendo en voz alta la propiedad speechMessage para usuarios con discapacidad visual.
+* **Prompt exacto utilizado:**
+  >  "Actualiza los componentes LoginForm.tsx y RegisterForm.tsx en /frontend/src/features/auth/components para integrarlos con la API del Backend:
+  >   En LoginForm.tsx, ejecuta la petición POST /api/auth/login con email y password. Al recibir una respuesta exitosa 200 OK, guarda el token JWT mediante setAuthToken(data.token, remember) y almacena la sesión del usuario.
+  >   Lee y anuncia por altavoz la propiedad accesible speechMessage devuelta por el servidor usando speechSynthesis y actualiza la región aria-live.
+  >   En RegisterForm.tsx, conecta el formulario con POST /api/auth/register enviando fullName, email y password, gestionando los códigos de estado 201 Created y 409 Conflict."
+
+---
+
+###   28/08/2026 - Célula 1 (Perfil de Usuario y Cambio de Contraseña)
+* **Autor:** Stevens
+* **Rol / Célula:** Célula 1 - Frontend & Backend (Doer / Developer)
+* **Herramienta IA:** Antigravity (Gemini 3.6 Flash / Pro)
++ **Objetivo:** Conectar la pantalla Mi Perfil (/dashboard/perfil) con los endpoints del Backend para consultar los datos del usuario en PostgreSQL (GET /api/users/profile), actualizar nombre/correo (PUT /api/users/profile) y permitir el cambio seguro de contraseña (PUT /api/users/password).
+* **Prompt exacto utilizado:**
+  >  "Refactoriza la página de perfil /frontend/src/app/(app)/dashboard/perfil/page.tsx para conectar todos los formularios con la API del Backend utilizando fetchWithAuth:
+  >   Al montar el componente, consulta GET /api/users/profile para cargar el nombre real, correo, fecha de registro y rol del usuario autenticado por JWT en PostgreSQL.
+  >   En el modal de edición de perfil, conecta el envío del formulario a PUT /api/users/profile enviando { nombre, email }.
+  >   En el modal de cambio de contraseña, conecta la acción a PUT /api/users/password enviando { actual, nueva } para que el backend valide la clave anterior con Bcryptjs y guarde el nuevo hash. Muestra notificaciones toast y retroalimentación de voz speechMessage ante éxitos o errores."
+
+---
+
+###   28/08/2026 - Célula 1 (Sincronización de Accesibilidad Universal)
+* **Autor:** Stevens
+* **Rol / Célula:** Célula 1 - Frontend & Backend (Doer / Developer)
+* **Herramienta IA:** Antigravity (Gemini 3.6 Flash / Pro)
+* **Objetivo:** Integrar el estado global de accesibilidad (AccessibilityContext.tsx) y la pantalla de configuración (/dashboard/accesibilidad) con PostgreSQL mediante los endpoints GET /api/accessibility y PUT /api/accessibility.
+* **Prompt exacto utilizado:**
+  >  "Conecta la gestión de accesibilidad de OpenBlind con la base de datos PostgreSQL:
+  >   En AccessibilityContext.tsx, añade una función al montar el cliente para consultar GET /api/accessibility mediante fetchWithAuth. Mapea las columnas en formato snake_case de la BD (lector_pantalla, alto_contraste, modo_oscuro, texto_grande, velocidad_lectura, volumen, idioma, color_acento) a las propiedades del estado React en camelCase.
+  >   En /dashboard/accesibilidad/page.tsx, actualiza la función handleSave para enviar un objeto formateado a PUT /api/accessibility mediante fetchWithAuth, logrando que las preferencias persistidas en la BD se apliquen de forma inmediata y se recuperen en cualquier dispositivo al iniciar sesión."
+
+---
+
+###   28/08/2026 - Célula 1 (Catálogo de Módulos, Favoritos y Progreso)
+* **Autor:** Stevens
+* **Rol / Célula:** Célula 1 - Frontend & Backend (Doer / Developer)
+* **Herramienta IA:** Antigravity (Gemini 3.6 Flash / Pro)
+* **Objetivo:** Conectar el catálogo principal de módulos (/dashboard/modulos) y la vista detallada de lecciones (/dashboard/modulos/[slug]) con la base de datos para recuperar lecciones con soporte JSONB, alternar estado de favoritos y registrar el porcentaje de progreso por usuario.
+* **Prompt exacto utilizado:**
+  >  "Integra las pantallas del catálogo de módulos con la API de Backend:
+  >   En /dashboard/modulos/page.tsx, sustituye la llamada estática por GET /api/modulos usando fetchWithAuth. Combina el catálogo de 6 tarjetas con el progreso e indica si cada módulo es favorito del usuario autenticado.
+  >   Actualiza la función toggleFavorite para invocar POST /api/modulos/:slug/favorito al presionar la estrella de favorito.
+  >   En /dashboard/modulos/[slug]/page.tsx, añade la sincronización de avance llamando a POST /api/modulos/:slug/progreso con { progreso: 100 } al completar ejercicios interactivos (simulador Braille, cuestionarios WCAG y flashcards de atajos)."
+
+---
+
+###   28/08/2026 - Célula 1 (Lector Inteligente & Persistencia de Textos)
+* **Autor:** Stevens
+* **Rol / Célula:** Célula 1 - Frontend & Backend (Doer / Developer)
+* **Herramienta IA:** Antigravity (Gemini 3.6 Flash / Pro)
+* **Objetivo:** Vincular la biblioteca del Lector Inteligente (/dashboard/lector) con la tabla textos_lector de PostgreSQL a través de los endpoints GET, POST y DELETE en /api/lector/textos.
+* **Prompt exacto utilizado:**
+  >  "Añade persistencia en la base de datos para el Lector Inteligente en /frontend/src/app/(app)/dashboard/lector/page.tsx:
+  >   Implementa el estado userTexts e invoca GET /api/lector/textos con fetchWithAuth al cargar la página para obtener los documentos almacenados del usuario.
+  >   Crea la función handleSaveToBackend que capture el contenido y título de la lectura actual y envíe POST /api/lector/textos con { titulo, contenido, idioma }.
+  >   Crea la función handleDeleteFromBackend para eliminar documentos de la biblioteca llamando a DELETE /api/lector/textos/:id.
+  >   Mantén la ejecución local de la síntesis de voz con window.speechSynthesis y el resaltado dinámico de oraciones intactos."
+
+---
+
+###   28/08/2026 - Célula 1 (Panel Principal y Verificación de Salud del Sistema)
+* **Autor:** Stevens
+* **Rol / Célula:** Célula 1 - Frontend & Backend (Doer / Developer)
+* **Herramienta IA:** Antigravity (Gemini 3.6 Flash / Pro)
+* **Objetivo:** Conectar el Dashboard principal (/dashboard) y la página de aterrizaje (app/page.tsx) con las peticiones de perfil y la ruta de diagnóstico /api/health, asegurando una compilación TypeScript sin errores y un build de producción limpio en Next.js.
+* **Prompt exacto utilizado:**
+  >  "Finaliza la integración global del Frontend OpenBlind:
+  >   En /dashboard/page.tsx, actualiza la función de carga inicial invocando GET /api/users/profile mediante fetchWithAuth para personalizar la tarjeta de saludo con el nombre real del usuario autenticado.
+  >   En app/page.tsx, conecta la comprobación de estado al endpoint GET /api/health mediante getApiBase() mostrando la etiqueta de estado accesible.
+  >   Ejecuta la verificación de tipos TypeScript (npx tsc --noEmit) y la compilación de producción Next.js (npm run build), solucionando cualquier error de firmas de funciones o tipos ausentes para garantizar 0 errores en build."
+
+---
