@@ -399,19 +399,36 @@ const routeSelectionRecognitionRef = useRef<any>(null);
 
   const sonarIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Load custom routes from localStorage
+    // Cargar rutas desde la API del Backend (http://localhost:3000/api/mobility/routes)
   useEffect(() => {
-    try {
+    const fetchBackendRoutes = async () => {
+      try {
+        const baseUrl = getApiBase();
+        const res = await fetch(`${baseUrl}/api/mobility/routes`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json?.status === "Success" && Array.isArray(json.data) && json.data.length > 0) {
+            setRoutes(json.data);
+            return;
+          }
+        }
+      } catch (error) {
+        console.warn("No se pudieron obtener las rutas del Backend. Usando rutas por defecto.", error);
+      }
+
+      // Fallback a localStorage o rutas por defecto si falla el backend
       const saved = localStorage.getItem(STORAGE_ROUTES_KEY);
       if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setRoutes(parsed);
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) setRoutes(parsed);
+        } catch (e) {
+          console.warn("Error leyendo rutas locales", e);
         }
       }
-    } catch (e) {
-      console.warn("Could not load custom routes from localStorage", e);
-    }
+    };
+
+    fetchBackendRoutes();
   }, []);
 
   // Save routes to localStorage whenever they change

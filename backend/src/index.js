@@ -440,6 +440,50 @@ app.get('/api/users/:id', async (req, res, next) => {
   }
 });
 
+// -------------------------------------------------------------
+// GET /api/mobility/routes - Obtener rutas de navegación Punto A a Punto B
+// -------------------------------------------------------------
+app.get('/api/mobility/routes', async (req, res, next) => {
+  try {
+    console.log('📡 [Backend] Petición recibida: GET /api/mobility/routes');
+    // Si tienes tabla de rutas en PostgreSQL:
+    // const result = await pool.query('SELECT * FROM rutas_movilidad ORDER BY id ASC');
+    // return res.status(200).json({ status: 'Success', data: result.rows });
+
+    // Si aún no has creado la tabla en Postgres, puedes responder la estructura esperada:
+    return res.status(200).json({
+      status: 'Success',
+      data: [
+        {
+          id: "BCN-UIO-01",
+          name: "📍 Quito: Metro San Francisco ➔ Plaza Grande (Centro Histórico)",
+          city: "Quito",
+          distanceMeter: 1.4,
+          frequency: 650,
+          steps: [
+            {
+              stepNumber: 1,
+              direction: "adelante",
+              stepsCount: 6,
+              title: "Paso 1: Salida de Estación San Francisco por Calle Sucre",
+              spokenText: "Paso 1 de 5. Sal de la estación San Francisco del Metro por la escalinata accesible hacia la Calle Sucre."
+            },
+            {
+              stepNumber: 2,
+              direction: "llegada",
+              stepsCount: 2,
+              title: "Paso 2: Llegada a la Fuente de la Plaza Grande",
+              spokenText: "Paso 2 de 2. ¡Llegaste a la Plaza Grande de Quito!"
+            }
+          ]
+        }
+      ]
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Middleware global de manejo de errores (SIEMPRE al final de las rutas)
 app.use(errorHandler);
 
