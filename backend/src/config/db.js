@@ -21,6 +21,11 @@ const pool = new Pool({
   database: dbName,
   password: dbPassword,
   port: dbPort,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+});
+
+pool.on('error', (err) => {
+  console.error('Error inesperado en el pool de PostgreSQL:', err);
 });
 
 pool.connect((err, client, release) => {

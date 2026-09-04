@@ -24,31 +24,39 @@ const Field = forwardRef<HTMLInputElement, FieldProps>(
 
     return (
       <div className="flex flex-col gap-1.5">
-        <label htmlFor={inputId} className="text-sm font-semibold text-[#102a43]">
-          {label}
-        </label>
-        {hint && (
-          <span id={hintId} className="text-xs text-slate-500">
-            {hint}
-          </span>
-        )}
-        <div className="relative">
+        <div className="flex items-center justify-between">
+          <label htmlFor={inputId} className="text-sm font-bold text-slate-800 dark:text-slate-200">
+            {label}
+            {rest.required && <span className="ml-1 text-rose-500" aria-hidden="true">*</span>}
+          </label>
+          {hint && (
+            <span id={hintId} className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              {hint}
+            </span>
+          )}
+        </div>
+        <div className="relative group">
           <input
             id={inputId}
             ref={ref}
             aria-invalid={Boolean(error)}
             aria-describedby={describedBy}
-            className={`w-full rounded-xl border-2 bg-white px-4 py-3 text-base text-[#102a43] placeholder:text-slate-400 transition-colors focus:outline-none focus-visible:outline-3 focus-visible:outline-[#f59e0b] focus-visible:outline-offset-2 ${
-              rightElement ? "pr-11" : ""
-            } ${error ? "border-red-500" : "border-slate-300 focus:border-[#102a43]"} ${className}`}
+            className={`w-full rounded-2xl border-2 bg-slate-50/70 px-4 py-3 text-base font-medium text-slate-900 placeholder:text-slate-400 transition-all duration-200 shadow-2xs hover:bg-white hover:border-slate-300 focus:bg-white focus:outline-none focus:ring-4 focus-visible:ring-amber-400 focus-visible:ring-offset-2 dark:bg-slate-900/70 dark:text-slate-100 dark:hover:bg-slate-900 dark:focus:bg-slate-900 ${
+              rightElement ? "pr-12" : ""
+            } ${
+              error
+                ? "border-red-500 ring-2 ring-red-500/20 focus:border-red-600 focus:ring-red-500/30"
+                : "border-slate-200/90 focus:border-[#2563eb] focus:ring-blue-500/20 dark:border-slate-700 dark:focus:border-blue-500"
+            } ${className}`}
             {...rest}
           />
           {rightElement && (
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3">{rightElement}</div>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3.5">{rightElement}</div>
           )}
         </div>
         {error && (
-          <span id={errorId} role="alert" className="text-sm font-medium text-red-600">
+          <span id={errorId} role="alert" className="flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400 mt-0.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
             {error}
           </span>
         )}

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AccessibilityProvider } from "@/features/accessibility/AccessibilityContext";
+import { GuestSessionProvider } from "@/features/auth/GuestSessionContext";
 
 export const metadata: Metadata = {
   title: "OpenBlind",
@@ -9,7 +11,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body>
+        <GuestSessionProvider>
+          <AccessibilityProvider>{children}</AccessibilityProvider>
+        </GuestSessionProvider>
+      </body>
     </html>
   );
 }

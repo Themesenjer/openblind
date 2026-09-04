@@ -1,15 +1,200 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #f8fafc;
-  --foreground: #102a43;
+  --foreground: #0f172a;
+  --accent-color: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-light: #dbeafe;
 }
 
+/* Accent Color Themes */
+html[data-accent="blue"] {
+  --accent-color: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-light: #dbeafe;
+}
+
+html[data-accent="green"] {
+  --accent-color: #10b981;
+  --accent-hover: #059669;
+  --accent-light: #d1fae5;
+}
+
+html[data-accent="purple"] {
+  --accent-color: #8b5cf6;
+  --accent-hover: #7c3aed;
+  --accent-light: #ede9fe;
+}
+
+html[data-accent="orange"] {
+  --accent-color: #f97316;
+  --accent-hover: #ea580c;
+  --accent-light: #ffedd5;
+}
+
+/* Dynamic Accent Overrides for #2563eb utility classes */
+html[data-accent] .bg-\[\#2563eb\] {
+  background-color: var(--accent-color) !important;
+}
+
+html[data-accent] .text-\[\#2563eb\] {
+  color: var(--accent-color) !important;
+}
+
+html[data-accent] .border-\[\#2563eb\] {
+  border-color: var(--accent-color) !important;
+}
+
+html[data-accent] .ring-\[\#2563eb\] {
+  --tw-ring-color: var(--accent-color) !important;
+}
+
+/* Base Body Styles & Ambient Gradients */
 body {
   margin: 0;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.6);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(51, 65, 85, 0.6);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(71, 85, 105, 0.8);
+}
+
+/* Glassmorphism & Card Utility Classes */
+.glass-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.05);
+}
+
+.dark .glass-card {
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(30, 41, 59, 0.85);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+}
+
+/* Custom Glow Shadows */
+.shadow-glow-blue {
+  box-shadow: 0 12px 32px -6px rgba(37, 99, 235, 0.2), 0 4px 14px -2px rgba(37, 99, 235, 0.1);
+}
+
+.shadow-glow-emerald {
+  box-shadow: 0 12px 32px -6px rgba(16, 185, 129, 0.2), 0 4px 14px -2px rgba(16, 185, 129, 0.1);
+}
+
+.shadow-glow-purple {
+  box-shadow: 0 12px 32px -6px rgba(139, 92, 246, 0.2), 0 4px 14px -2px rgba(139, 92, 246, 0.1);
+}
+
+/* Large Text Mode */
+html.large-text {
+  font-size: 118%;
+}
+
+/* Dark Mode Styles */
+html.dark body,
+body.dark {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+html.dark main,
+html.dark header,
+html.dark div,
+html.dark section {
+  border-color: #1e293b;
+}
+
+/* High Contrast Mode Styles (WCAG 2.1 AAA strictly preserved) */
+html.high-contrast,
+html.high-contrast body,
+html.high-contrast main,
+html.high-contrast header,
+html.high-contrast nav,
+html.high-contrast section,
+html.high-contrast article,
+html.high-contrast aside,
+html.high-contrast footer,
+html.high-contrast div {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #facc15 !important;
+}
+
+html.high-contrast p,
+html.high-contrast span,
+html.high-contrast h1,
+html.high-contrast h2,
+html.high-contrast h3,
+html.high-contrast h4,
+html.high-contrast h5,
+html.high-contrast h6,
+html.high-contrast label,
+html.high-contrast a,
+html.high-contrast button {
+  color: #ffffff !important;
+}
+
+html.high-contrast button,
+html.high-contrast input,
+html.high-contrast select,
+html.high-contrast [role="switch"] {
+  border: 2px solid #facc15 !important;
+  background-color: #000000 !important;
+}
+
+html.high-contrast [role="switch"][aria-checked="true"] {
+  background-color: #facc15 !important;
+}
+
+html.high-contrast [role="switch"][aria-checked="true"] span {
+  background-color: #000000 !important;
+}
+
+html.high-contrast :focus-visible {
+  outline: 4px solid #facc15 !important;
+  outline-offset: 4px !important;
+}
+
+/* Enhanced Keyboard Navigation Focus (High visibility gold ring) */
+html.keyboard-nav :focus-visible {
+  outline: 4px solid #f59e0b;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.45);
 }
 
 :focus-visible {

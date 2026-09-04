@@ -1,4 +1,4 @@
-const buildAntigravityResponse = require('../utils/antigravity');
+const AppError = require('../utils/AppError');
 
 /**
  * Middleware global de manejo de errores para Express.
@@ -6,22 +6,22 @@ const buildAntigravityResponse = require('../utils/antigravity');
  */
 const errorHandler = (err, req, res, next) => {
   const statusCode = err.statusCode || 500;
-  const message = err.message || 'Error interno del servidor';
+  const isOperational = err instanceof AppError;
+  const message = isOperational ? err.message : 'Error interno del servidor';
 
-  // Registrar el log detallado en el servidor para depuración
+  // Registrar el log detallado en el servidor
   console.error(`[ERROR ${req.method} ${req.originalUrl}]:`, {
     statusCode,
     message: err.message,
     stack: err.stack
   });
 
-  // Retornar la respuesta JSON con la estructura Antigravity / TTS
-  return res.status(statusCode).json(buildAntigravityResponse({
-    status: statusCode, // 💡 Pasa el código numérico (ej. 401, 500) para consistencia con las respuestas de éxito
-    success: false,
-    speechMessage: `Atención: ${message}`,
-    data: null
-  }));
+  // Retornar la respuesta JSON centralizada respetando la interfaz actual
+  return res.status(statusCode).json({
+    status: 'Error',
+    message: message,
+    speechMessage: err.speechMessage || message
+  });
 };
 
 module.exports = errorHandler;

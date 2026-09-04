@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getApiBase } from "@/lib/api";
 import {
   EyeIcon,
   KeyboardIcon,
@@ -47,10 +48,10 @@ interface ISpeechRecognition {
 }
 
 const features = [
-  { label: "Navegación por teclado", icon: KeyboardIcon },
-  { label: "Comandos de voz", icon: MicIcon },
-  { label: "Lector de pantalla", icon: ScreenReaderIcon },
-  { label: "Alto contraste", icon: ContrastIcon },
+  { label: "Navegación por teclado", icon: KeyboardIcon, color: "text-blue-600 bg-blue-50 border-blue-200" },
+  { label: "Comandos de voz", icon: MicIcon, color: "text-emerald-600 bg-emerald-50 border-emerald-200" },
+  { label: "Lector de pantalla", icon: ScreenReaderIcon, color: "text-purple-600 bg-purple-50 border-purple-200" },
+  { label: "Alto contraste", icon: ContrastIcon, color: "text-amber-600 bg-amber-50 border-amber-200" },
 ];
 
 export default function HomePage() {
@@ -59,9 +60,32 @@ export default function HomePage() {
   const [transcript, setTranscript] = useState("");
   const [announcement, setAnnouncement] = useState("");
   const [permissionError, setPermissionError] = useState<string | null>(null);
+  const [backendStatus, setBackendStatus] = useState<{ status: string; message: string } | null>(null);
   const router = useRouter();
 
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
+  const isListeningRef = useRef(false);
+
+  useEffect(() => {
+    isListeningRef.current = isListening;
+  }, [isListening]);
+
+  // Connect to Backend API health check
+  useEffect(() => {
+    const checkBackend = async () => {
+      try {
+        const apiBase = getApiBase();
+        const res = await fetch(`${apiBase}/api/health`);
+        const data = await res.json();
+        if (data?.status === "OK") {
+          setBackendStatus({ status: "OK", message: data.speechMessage || "Backend Conectado" });
+        }
+      } catch {
+        setBackendStatus({ status: "Offline", message: "Modo fuera de línea" });
+      }
+    };
+    checkBackend();
+  }, []);
 
   // Helper for speech feedback (Web Speech API SpeechSynthesis & ARIA Live Region)
   const speakFeedback = useCallback((text: string) => {
@@ -120,37 +144,57 @@ export default function HomePage() {
     if (!SpeechRecognitionCtor) return;
 
     const recognition = new SpeechRecognitionCtor();
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = "es-ES";
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const current = event.resultIndex;
-      const resultText = event.results[current][0].transcript;
-      setTranscript(resultText);
-
-      if (event.results[current].isFinal) {
-        handleVoiceCommand(resultText);
-        setIsListening(false);
+      let currentText = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        currentText += event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          const finalVal = event.results[i][0].transcript;
+          setTranscript(finalVal);
+          handleVoiceCommand(finalVal);
+          setIsListening(false);
+          try {
+            recognition.stop();
+          } catch {
+            // ignore
+          }
+          return;
+        }
       }
+      setTranscript(currentText);
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.warn("SpeechRecognition event:", event.error);
-      setIsListening(false);
+      if (event.error === "no-speech") {
+        return; // Ignorar silencio temporal
+      }
 
       if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        setIsListening(false);
         setPermissionError("Permiso de micrófono no otorgado. Puedes usar la prueba rápida abajo.");
         speakFeedback("Permiso de micrófono no otorgado. Selecciona un comando rápido o usa la navegación por teclado.");
       } else if (event.error === "audio-capture") {
+        setIsListening(false);
         setPermissionError("Micrófono no detectado.");
         speakFeedback("Micrófono no detectado. Puedes hacer clic en Comenzar.");
       }
-      // For benign errors like 'no-speech' or 'aborted', we do NOT show noisy error messages
     };
 
     recognition.onend = () => {
-      setIsListening(false);
+      if (isListeningRef.current) {
+        try {
+          recognition.start();
+        } catch {
+          setIsListening(false);
+        }
+      } else {
+        setIsListening(false);
+      }
     };
 
     recognitionRef.current = recognition;
@@ -165,7 +209,7 @@ export default function HomePage() {
         try {
           recognitionRef.current.stop();
         } catch {
-          // Ignore error if already stopped
+          // Ignore
         }
       }
       setIsListening(false);
@@ -175,7 +219,6 @@ export default function HomePage() {
       setTranscript("");
       speakFeedback("Escuchando. Di ingresar para acceder a OpenBlind.");
 
-      // Delay recognition start slightly so TTS utterance doesn't overlap/abort microphone input
       setTimeout(() => {
         if (recognitionRef.current) {
           try {
@@ -223,7 +266,7 @@ export default function HomePage() {
   }, [toggleVoiceInput]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-[#f8fafc]">
+    <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-950">
       {/* Live Region for Screen Readers (WCAG 2.1 AA) */}
       <div
         aria-live="assertive"
@@ -234,20 +277,37 @@ export default function HomePage() {
         {announcement}
       </div>
 
-      {/* Decorative Top Accent */}
-      <div className="h-1.5 w-full bg-gradient-to-r from-[#2563eb] via-[#7c3aed] to-[#10b981]" />
+      {/* Decorative Top Gradient Line */}
+      <div className="h-1.5 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-500" />
 
-      <div className="flex w-full max-w-2xl flex-1 flex-col items-center px-4 py-12 text-center">
-        {/* Logo Icon */}
-        <span className="flex h-20 w-20 items-center justify-center rounded-3xl bg-[#2563eb] text-white shadow-lg shadow-blue-500/20">
-          <EyeIcon width={36} height={36} strokeWidth={2.2} />
-        </span>
+      {/* Ambient background glows */}
+      <div className="pointer-events-none absolute -top-40 -left-40 h-96 w-96 rounded-full bg-blue-400/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-purple-400/20 blur-3xl" />
+
+      <div className="relative z-10 flex w-full max-w-2xl flex-1 flex-col items-center justify-center px-4 py-16 text-center">
+        {/* Logo Container with Ambient Glow */}
+        <div className="relative">
+          <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-600 opacity-30 blur-lg transition duration-500 hover:opacity-75" />
+          <span className="relative flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-500/25">
+            <EyeIcon width={38} height={38} strokeWidth={2.2} />
+          </span>
+        </div>
 
         {/* Title & Subtitle */}
-        <h1 className="mt-8 text-4xl font-extrabold text-[#0f172a] sm:text-5xl">
-          Bienvenido a <span className="text-[#2563eb]">OpenBlind</span>
+        <h1 className="mt-8 text-4xl font-black tracking-tight text-slate-900 dark:text-white sm:text-5xl">
+          Bienvenido a <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">OpenBlind</span>
         </h1>
-        <p className="mt-3 text-lg text-slate-600">Tecnología accesible para todos.</p>
+        <p className="mt-3 text-lg font-medium text-slate-600 dark:text-slate-300 max-w-md">
+          Plataforma de tecnología interactiva y navegación asistida para todos.
+        </p>
+
+        {/* Backend Live Connection Badge */}
+        {backendStatus && (
+          <div className="mt-3 flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3.5 py-1 text-xs font-semibold text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300">
+            <span className={`h-2 w-2 rounded-full ${backendStatus.status === "OK" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
+            <span>API Backend: {backendStatus.message}</span>
+          </div>
+        )}
 
         {/* Active Listening Visual Banner */}
         {isListening && (
@@ -280,7 +340,7 @@ export default function HomePage() {
               </button>
             </div>
 
-            {/* Simulated Voice Command Quick Triggers (Guarantees testing works anywhere) */}
+            {/* Voice Command Quick Triggers */}
             <div className="flex items-center justify-between border-t border-rose-900/80 pt-2 text-xs">
               <span className="text-rose-200">Prueba rápida:</span>
               <div className="flex gap-2">
@@ -333,12 +393,12 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Feature Highlights */}
-        <ul className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          {features.map(({ label, icon: Icon }) => (
+        {/* Feature Highlights Badges */}
+        <ul className="mt-8 flex flex-wrap items-center justify-center gap-2.5">
+          {features.map(({ label, icon: Icon, color }) => (
             <li
               key={label}
-              className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm"
+              className={`flex items-center gap-2 rounded-2xl border px-4 py-2 text-xs font-extrabold transition-all hover:scale-105 shadow-2xs ${color}`}
             >
               <Icon width={16} height={16} />
               {label}
@@ -347,16 +407,26 @@ export default function HomePage() {
         </ul>
 
         {/* Main Interactive Actions */}
-        <div className="mt-10 flex w-full max-w-sm flex-col gap-3">
-          {/* Action 1: Primary Link to Login */}
+        <div className="mt-10 flex w-full max-w-sm flex-col gap-3.5">
+          {/* Action 0: Direct Guest Mobility (Single Screen) Access without mandatory login */}
+     <Link
+  href="/movilidad"
+  onFocus={() => handleElementFocus("Botón Navegar en Modo Invitado sin registro. Haz clic para usar la guía de movilidad inmediatamente.")}
+  onMouseEnter={() => handleElementFocus("Usar Asistencia de Movilidad sin Registro")}
+  className="group relative flex items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-4 text-base font-extrabold text-white shadow-xl shadow-emerald-500/25 transition-all hover:scale-[1.02] hover:shadow-emerald-500/35 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:ring-offset-2 active:scale-[0.98]"
+>
+  <span>⚡ Usar Movilidad (Sin Registro)</span>
+  <ArrowRightIcon width={18} height={18} className="transition-transform group-hover:translate-x-1" />
+</Link>
+
+          {/* Action 1: Optional Link to Login */}
           <Link
             href="/login"
-            onFocus={() => handleElementFocus("Botón Comenzar. Haz clic para ir al inicio de sesión.")}
-            onMouseEnter={() => handleElementFocus("Comenzar e ir al inicio de sesión")}
-            className="flex items-center justify-center gap-2 rounded-xl bg-[#2563eb] px-4 py-3.5 text-base font-semibold text-white shadow-md transition-all hover:bg-[#1d4ed8] focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:ring-offset-2"
+            onFocus={() => handleElementFocus("Botón Iniciar Sesión. Haz clic para acceder a tu cuenta guardada.")}
+            onMouseEnter={() => handleElementFocus("Iniciar sesión con cuenta existente")}
+            className="group relative flex items-center justify-center gap-2.5 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-5 py-3 text-sm font-bold text-slate-800 dark:text-slate-200 shadow-sm transition-all hover:scale-[1.02] focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400"
           >
-            <span>Comenzar (Iniciar Sesión)</span>
-            <ArrowRightIcon width={18} height={18} />
+            <span>Iniciar Sesión / Guardar Historial</span>
           </Link>
 
           {/* Action 2: Interactive Voice Input Button */}
@@ -377,19 +447,19 @@ export default function HomePage() {
                 ? "Detener reconocimiento de voz (Atajo Alt + V)"
                 : "Ingresar con voz a OpenBlind (Atajo Alt + V)"
             }
-            className={`flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3.5 text-base font-semibold transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:ring-offset-2 ${
+            className={`flex items-center justify-center gap-2.5 rounded-2xl border-2 px-5 py-3.5 text-base font-bold transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:ring-offset-2 ${
               isListening
                 ? "border-rose-600 bg-rose-600 text-white ring-4 ring-rose-300 animate-pulse"
-                : "border-[#10b981] bg-white text-[#0f9d6e] hover:bg-emerald-50"
+                : "border-emerald-500 bg-white text-emerald-700 hover:bg-emerald-50 shadow-md shadow-emerald-500/10"
             }`}
           >
             {isListening ? (
               <MicOffIcon width={20} height={20} className="animate-bounce" />
             ) : (
-              <MicIcon width={20} height={20} />
+              <MicIcon width={20} height={20} className="text-emerald-600" />
             )}
             <span>{isListening ? "Escuchando... (Di 'Ingresar')" : "Ingresar con voz"}</span>
-            <kbd className="ml-1 hidden sm:inline-block rounded bg-emerald-100 px-2 py-0.5 text-xs font-mono text-emerald-800">
+            <kbd className="ml-1 hidden sm:inline-block rounded-md bg-emerald-100 px-2 py-0.5 text-xs font-mono text-emerald-800 border border-emerald-200">
               Alt + V
             </kbd>
           </button>
@@ -412,16 +482,16 @@ export default function HomePage() {
                 ? "Desactivar lector de pantalla asistido"
                 : "Activar lector de pantalla asistido por voz"
             }
-            className={`flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3.5 text-base font-semibold transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:ring-offset-2 ${
+            className={`flex items-center justify-center gap-2.5 rounded-2xl border-2 px-5 py-3.5 text-base font-bold transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:ring-offset-2 ${
               isScreenReaderActive
-                ? "border-[#2563eb] bg-[#2563eb] text-white shadow-md ring-4 ring-blue-200"
-                : "border-[#2563eb] bg-white text-[#2563eb] hover:bg-blue-50"
+                ? "border-blue-600 bg-blue-600 text-white shadow-lg ring-4 ring-blue-200"
+                : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 shadow-sm"
             }`}
           >
             {isScreenReaderActive ? (
               <CheckIcon width={20} height={20} />
             ) : (
-              <SpeakerIcon width={20} height={20} />
+              <SpeakerIcon width={20} height={20} className="text-blue-600" />
             )}
             <span>
               {isScreenReaderActive ? "Lector de pantalla activo 🔊" : "Activar lector de pantalla"}
@@ -430,8 +500,8 @@ export default function HomePage() {
         </div>
 
         {/* WCAG Compliance Badge */}
-        <span className="mt-8 flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700">
-          <AccessibilityBadgeIcon width={14} height={14} />
+        <span className="mt-10 flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/80 px-4 py-2 text-xs font-semibold text-emerald-800 shadow-sm backdrop-blur-sm">
+          <AccessibilityBadgeIcon width={15} height={15} className="text-emerald-600" />
           WCAG 2.1 Nivel AA · Compatible con NVDA, VoiceOver y TalkBack
         </span>
       </div>

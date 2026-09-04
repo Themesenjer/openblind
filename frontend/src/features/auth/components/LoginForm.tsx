@@ -14,8 +14,12 @@ import {
   XIcon,
   KeyIcon,
   CheckIcon,
+  Volume2Icon,
+  VolumeXIcon,
 } from "@/components/ui/icons";
 import type { AuthFieldErrors } from "@/types/auth";
+
+import { setAuthToken, getApiBase } from "@/lib/api";
 
 interface LoginValues {
   username: string;
@@ -68,6 +72,7 @@ export default function LoginForm() {
   
   // Voice & Accessibility state
   const [isListening, setIsListening] = useState(false);
+  const [isVoiceFeedbackEnabled, setIsVoiceFeedbackEnabled] = useState(true);
   const [transcript, setTranscript] = useState("");
   const [announcement, setAnnouncement] = useState("");
   const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
@@ -77,22 +82,99 @@ export default function LoginForm() {
 
   const router = useRouter();
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
+  const isListeningRef = useRef(false);
+
+  useEffect(() => {
+    isListeningRef.current = isListening;
+  }, [isListening]);
+
+  // Focus Refs for Keyboard Trap and Focus Restoration
+  const usernameInputRef = useRef<HTMLInputElement | null>(null);
+  const forgotPasswordTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const modalEmailInputRef = useRef<HTMLInputElement | null>(null);
 
   function handleChange<K extends keyof LoginValues>(field: K, value: LoginValues[K]) {
     setValues((prev) => ({ ...prev, [field]: value }));
   }
 
-  // Helper for SpeechSynthesis & ARIA Live
-  const speakFeedback = useCallback((text: string) => {
+  // Helper for SpeechSynthesis & ARIA Live Announcements
+  const speakFeedback = useCallback((text: string, force: boolean = false) => {
     setAnnouncement(text);
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    if ((isVoiceFeedbackEnabled || force) && typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = "es-ES";
       utterance.rate = 1.0;
       window.speechSynthesis.speak(utterance);
     }
-  }, []);
+  }, [isVoiceFeedbackEnabled]);
+
+  // Initial welcome speech on component mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      speakFeedback(
+        "Bienvenido a OpenBlind. Formulario de inicio de sesión accesible. Usa la tecla Tab para navegar entre los campos, o presiona Alt + V para comandos de voz."
+      );
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [speakFeedback]);
+
+  // Focus-triggered Speech Synthesis for blind/low-vision keyboard users
+  const handleElementFocus = (description: string) => {
+    if (isVoiceFeedbackEnabled) {
+      speakFeedback(description);
+    }
+  };
+
+  // Helper function to execute login against real API
+  const executeLogin = useCallback(
+    async (emailInput: string, passwordInput: string, rememberInput: boolean) => {
+      setFormError(null);
+      setSubmitting(true);
+      try {
+        const apiBase = getApiBase();
+
+        const res = await fetch(`${apiBase}/api/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: emailInput, password: passwordInput }),
+        });
+
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok) {
+          const speechMsg = data?.speechMessage || data?.message || "Credenciales inválidas. Por favor verifica tu usuario y contraseña.";
+          setFormError(data?.message || speechMsg);
+          speakFeedback(speechMsg, true);
+          return;
+        }
+
+        if (data?.token) {
+          setAuthToken(data.token, rememberInput);
+        }
+
+        const user = data?.user ?? data ?? null;
+
+        if (rememberInput) {
+          localStorage.setItem("user", JSON.stringify(user));
+        } else {
+          sessionStorage.setItem("user", JSON.stringify(user));
+        }
+
+        const successSpeech = data?.speechMessage || `Bienvenido ${user?.nombre || emailInput}. Inicio de sesión exitoso. Redirigiendo a tu panel de control.`;
+        speakFeedback(successSpeech, true);
+        router.push("/dashboard");
+      } catch (err) {
+        console.error("Login error", err);
+        const errText = "No se pudo conectar con el servidor Backend. Por favor verifica que la API esté corriendo.";
+        setFormError(errText);
+        speakFeedback(errText, true);
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [router, speakFeedback]
+  );
 
   // Voice command processor for Login
   const handleVoiceCommand = useCallback(
@@ -108,36 +190,23 @@ export default function LoginForm() {
         text.includes("sesión") ||
         text.includes("sesion")
       ) {
-        speakFeedback("Iniciando sesión con el usuario admin...");
-        // Auto-fill standard demo credentials if empty and submit
-        setValues((prev) => ({
-          username: prev.username || "admin",
-          password: prev.password || "admin123",
-          remember: true,
-        }));
-        
-        setTimeout(() => {
-          const user = {
-            id: 1,
-            nombre: "admin",
-            email: "admin@openblind.org",
-            rol: "user",
-            creado_en: new Date().toISOString(),
-          };
-          localStorage.setItem("user", JSON.stringify(user));
-          router.push("/dashboard");
-        }, 500);
+        speakFeedback("Procesando inicio de sesión con el servidor Backend...", true);
+        const emailToUse = values.username || "admin@openblind.org";
+        const passwordToUse = values.password || "admin123";
+        setValues({ username: emailToUse, password: passwordToUse, remember: true });
+        executeLogin(emailToUse, passwordToUse, true);
       } else if (text.includes("olvidé") || text.includes("olvide") || text.includes("recuperar") || text.includes("contraseña")) {
-        speakFeedback("Abriendo ventana de recuperación de contraseña.");
+        speakFeedback("Abriendo ventana de recuperación de contraseña.", true);
         setForgotPasswordModal(true);
       } else if (text.includes("cerrar") || text.includes("cancelar")) {
-        speakFeedback("Cerrando ventana modal.");
+        speakFeedback("Cerrando ventana modal.", true);
         setForgotPasswordModal(false);
+        forgotPasswordTriggerRef.current?.focus();
       } else {
-        speakFeedback(`Comando "${spokenText}" recibido. Di ingresar para acceder o recupera tu contraseña.`);
+        speakFeedback(`Comando "${spokenText}" no reconocido. Di ingresar o recuperar contraseña.`, true);
       }
     },
-    [router, speakFeedback]
+    [executeLogin, speakFeedback, values.username, values.password]
   );
 
   // Speech Recognition Init
@@ -152,34 +221,57 @@ export default function LoginForm() {
     if (!SpeechRecognitionCtor) return;
 
     const recognition = new SpeechRecognitionCtor();
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = "es-ES";
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const current = event.resultIndex;
-      const resultText = event.results[current][0].transcript;
-      setTranscript(resultText);
-
-      if (event.results[current].isFinal) {
-        handleVoiceCommand(resultText);
-        setIsListening(false);
+      let currentText = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        currentText += event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          const finalVal = event.results[i][0].transcript;
+          setTranscript(finalVal);
+          handleVoiceCommand(finalVal);
+          setIsListening(false);
+          try {
+            recognition.stop();
+          } catch {
+            // ignore
+          }
+          return;
+        }
       }
+      setTranscript(currentText);
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.warn("Speech recognition status:", event.error);
-      setIsListening(false);
+      if (event.error === "no-speech") {
+        return;
+      }
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        setIsListening(false);
+        speakFeedback("Permiso de micrófono denegado en el navegador.", true);
+      }
     };
 
     recognition.onend = () => {
-      setIsListening(false);
+      if (isListeningRef.current) {
+        try {
+          recognition.start();
+        } catch {
+          setIsListening(false);
+        }
+      } else {
+        setIsListening(false);
+      }
     };
 
     recognitionRef.current = recognition;
-  }, [handleVoiceCommand]);
+  }, [handleVoiceCommand, speakFeedback]);
 
-  // Toggle Voice Input
+  // Toggle Voice Input (Mic)
   const toggleVoiceInput = useCallback(() => {
     if (isListening) {
       if (recognitionRef.current) {
@@ -190,11 +282,11 @@ export default function LoginForm() {
         }
       }
       setIsListening(false);
-      speakFeedback("Comandos de voz desactivados.");
+      speakFeedback("Comandos de voz desactivados.", true);
     } else {
       setIsListening(true);
       setTranscript("");
-      speakFeedback("Escuchando. Di ingresar para acceder o di olvidé mi contraseña.");
+      speakFeedback("Escuchando. Di 'Ingresar' para acceder o 'Olvidé mi contraseña'.", true);
 
       setTimeout(() => {
         if (recognitionRef.current) {
@@ -208,18 +300,56 @@ export default function LoginForm() {
     }
   }, [isListening, speakFeedback]);
 
-  // Alt + V global keyboard shortcut
+  // Toggle Speech Synthesis Voice Feedback
+  const toggleVoiceFeedback = useCallback(() => {
+    setIsVoiceFeedbackEnabled((prev) => {
+      const next = !prev;
+      speakFeedback(
+        next ? "Guía de voz hablada activada." : "Guía de voz hablada desactivada.",
+        true
+      );
+      return next;
+    });
+  }, [speakFeedback]);
+
+  // Global Keyboard Shortcuts (Alt + V, Alt + S, Escape)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Alt + V: Toggle Microphone Voice Command Input
       if (e.altKey && (e.key === "v" || e.key === "V")) {
         e.preventDefault();
         toggleVoiceInput();
+      }
+
+      // Alt + S: Toggle Speech Synthesis Narration
+      if (e.altKey && (e.key === "s" || e.key === "S")) {
+        e.preventDefault();
+        toggleVoiceFeedback();
+      }
+
+      // Escape key: Close Modal if open
+      if (e.key === "Escape" && forgotPasswordModal) {
+        e.preventDefault();
+        setForgotPasswordModal(false);
+        setResetSuccess(false);
+        setResetError("");
+        speakFeedback("Ventana modal cerrada.", true);
+        forgotPasswordTriggerRef.current?.focus();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [toggleVoiceInput]);
+  }, [forgotPasswordModal, toggleVoiceInput, toggleVoiceFeedback, speakFeedback]);
+
+  // Auto-focus email input when modal opens
+  useEffect(() => {
+    if (forgotPasswordModal && !resetSuccess) {
+      setTimeout(() => {
+        modalEmailInputRef.current?.focus();
+      }, 100);
+    }
+  }, [forgotPasswordModal, resetSuccess]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -227,32 +357,15 @@ export default function LoginForm() {
 
     const fieldErrors = validate(values);
     setErrors(fieldErrors);
-    if (Object.keys(fieldErrors).length > 0) return;
+    if (Object.keys(fieldErrors).length > 0) {
+      const firstErr = Object.values(fieldErrors)[0];
+      if (firstErr) speakFeedback(`Error en el formulario: ${firstErr}`, true);
+      return;
+    }
 
     setSubmitting(true);
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
-
-      if (!apiBase) {
-        const user = {
-          id: 1,
-          nombre: values.username,
-          email: values.username,
-          rol: "user",
-          creado_en: new Date().toISOString(),
-        };
-
-        if (values.remember) {
-          localStorage.setItem("user", JSON.stringify(user));
-        } else {
-          sessionStorage.setItem("user", JSON.stringify(user));
-        }
-
-        speakFeedback(`Bienvenido ${values.username}. Accediendo al panel de control.`);
-        setSubmitting(false);
-        router.push("/dashboard");
-        return;
-      }
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
       const res = await fetch(`${apiBase}/api/auth/login`, {
         method: "POST",
@@ -263,9 +376,9 @@ export default function LoginForm() {
       const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-        const msg = data?.message || "Credenciales inválidas.";
-        setFormError(msg);
-        speakFeedback(msg);
+        const speechMsg = data?.speechMessage || data?.message || "Credenciales inválidas. Por favor verifica tu usuario y contraseña.";
+        setFormError(data?.message || speechMsg);
+        speakFeedback(speechMsg, true);
         return;
       }
 
@@ -277,36 +390,62 @@ export default function LoginForm() {
         sessionStorage.setItem("user", JSON.stringify(user));
       }
 
-      speakFeedback("Inicio de sesión exitoso. Cargando tu dashboard.");
+      const successSpeech = data?.speechMessage || `Bienvenido ${user?.nombre || values.username}. Inicio de sesión exitoso. Redirigiendo a tu panel de control.`;
+      speakFeedback(successSpeech, true);
       router.push("/dashboard");
     } catch (err) {
       console.error("Login error", err);
-      const errText = "No se pudo iniciar sesión. Intenta nuevamente.";
+      const errText = "No se pudo conectar con el servidor Backend. Por favor verifica que la API esté corriendo.";
       setFormError(errText);
-      speakFeedback(errText);
+      speakFeedback(errText, true);
     } finally {
       setSubmitting(false);
     }
   }
 
   // Handle password recovery form submit
-  function handleResetSubmit(e: FormEvent) {
+  async function handleResetSubmit(e: FormEvent) {
     e.preventDefault();
     setResetError("");
 
     if (!resetEmail.trim()) {
-      setResetError("Por favor ingresa tu correo electrónico.");
-      speakFeedback("Por favor ingresa tu correo electrónico.");
+      const msg = "Por favor ingresa tu correo electrónico para restablecer la contraseña.";
+      setResetError(msg);
+      speakFeedback(msg, true);
       return;
     }
 
-    setResetSuccess(true);
-    speakFeedback(`Se ha enviado un enlace de recuperación al correo ${resetEmail}`);
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+      const res = await fetch(`${apiBase}/api/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: resetEmail.trim() }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        const speechMsg = data?.speechMessage || data?.message || "No se pudo procesar la solicitud de recuperación.";
+        setResetError(data?.message || speechMsg);
+        speakFeedback(speechMsg, true);
+        return;
+      }
+
+      setResetSuccess(true);
+      const successSpeech = data?.speechMessage || `Se han enviado las instrucciones de recuperación al correo ${resetEmail}.`;
+      speakFeedback(successSpeech, true);
+    } catch (err) {
+      console.error("Forgot password error", err);
+      const errText = "No se pudo conectar con el servidor Backend para la recuperación de contraseña.";
+      setResetError(errText);
+      speakFeedback(errText, true);
+    }
   }
 
   return (
     <>
-      {/* Live Region for Screen Readers */}
+      {/* Dynamic Live Region for Screen Readers */}
       <div
         aria-live="assertive"
         aria-atomic="true"
@@ -320,16 +459,52 @@ export default function LoginForm() {
         onSubmit={handleSubmit}
         noValidate
         aria-labelledby="login-heading"
-        className="flex w-full max-w-md flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-8 shadow-lg relative"
+        className="flex w-full max-w-md flex-col gap-5 rounded-3xl border border-slate-200/80 bg-white/95 p-8 sm:p-9 shadow-2xl shadow-blue-900/5 backdrop-blur-xl relative dark:bg-slate-900/95 dark:border-slate-800"
       >
-        <span
-          role="status"
-          className="flex items-center gap-2 self-start rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700"
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          <AccessibilityBadgeIcon width={14} height={14} />
-          Accesibilidad activa · TAB para navegar
-        </span>
+        {/* Status Badge & Voice Feedback Toggle */}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <span
+            role="status"
+            className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <AccessibilityBadgeIcon width={14} height={14} />
+            Accesibilidad Activa
+          </span>
+
+          <button
+            type="button"
+            onClick={toggleVoiceFeedback}
+            aria-pressed={isVoiceFeedbackEnabled}
+            aria-label={
+              isVoiceFeedbackEnabled
+                ? "Desactivar lectura de foco por voz (Alt + S)"
+                : "Activar lectura de foco por voz (Alt + S)"
+            }
+            onFocus={() =>
+              handleElementFocus(
+                isVoiceFeedbackEnabled
+                  ? "Botón: Lectura por voz activa. Presiona para desactivar o usa Alt + S."
+                  : "Botón: Lectura por voz inactiva. Presiona para activar o usa Alt + S."
+              )
+            }
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400 ${
+              isVoiceFeedbackEnabled
+                ? "border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                : "border-slate-300 bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            {isVoiceFeedbackEnabled ? (
+              <Volume2Icon width={14} height={14} className="text-blue-600" />
+            ) : (
+              <VolumeXIcon width={14} height={14} className="text-slate-400" />
+            )}
+            <span>Voz {isVoiceFeedbackEnabled ? "On" : "Off"}</span>
+            <kbd className="ml-1 rounded bg-white px-1 text-[10px] font-mono text-slate-500 border border-slate-200">
+              Alt+S
+            </kbd>
+          </button>
+        </div>
 
         <div>
           <h1 id="login-heading" className="text-2xl font-bold text-[#0f172a]">
@@ -340,7 +515,11 @@ export default function LoginForm() {
 
         {/* Voice listening banner */}
         {isListening && (
-          <div className="flex flex-col gap-2 rounded-xl border border-rose-300 bg-rose-950/95 p-3 text-white shadow-xl animate-in fade-in">
+          <div
+            role="status"
+            aria-live="assertive"
+            className="flex flex-col gap-2 rounded-xl border border-rose-300 bg-rose-950/95 p-3 text-white shadow-xl animate-in fade-in"
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <span className="relative flex h-3 w-3">
@@ -354,7 +533,8 @@ export default function LoginForm() {
               <button
                 type="button"
                 onClick={() => setIsListening(false)}
-                className="rounded p-1 text-slate-300 hover:text-white"
+                aria-label="Cerrar micrófono"
+                className="rounded p-1 text-slate-300 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
               >
                 <XIcon width={16} height={16} />
               </button>
@@ -366,14 +546,14 @@ export default function LoginForm() {
               <button
                 type="button"
                 onClick={() => handleVoiceCommand("ingresar")}
-                className="rounded bg-rose-900/80 px-2 py-0.5 font-semibold text-rose-100 hover:bg-rose-800"
+                className="rounded bg-rose-900/80 px-2 py-0.5 font-semibold text-rose-100 hover:bg-rose-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
               >
                 🗣️ Di "Ingresar"
               </button>
               <button
                 type="button"
                 onClick={() => handleVoiceCommand("olvidé mi contraseña")}
-                className="rounded bg-rose-900/80 px-2 py-0.5 font-semibold text-rose-100 hover:bg-rose-800"
+                className="rounded bg-rose-900/80 px-2 py-0.5 font-semibold text-rose-100 hover:bg-rose-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
               >
                 🗣️ Di "Olvidé contraseña"
               </button>
@@ -382,12 +562,13 @@ export default function LoginForm() {
         )}
 
         {formError && (
-          <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          <p role="alert" className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm font-medium text-red-700">
             {formError}
           </p>
         )}
 
         <Field
+          ref={usernameInputRef}
           label="Usuario"
           type="text"
           name="username"
@@ -395,6 +576,7 @@ export default function LoginForm() {
           placeholder="Tu nombre de usuario o correo"
           value={values.username}
           onChange={(e) => handleChange("username", e.target.value)}
+          onFocus={() => handleElementFocus("Campo: Usuario. Ingresa tu nombre de usuario o correo electrónico.")}
           error={errors.username}
           required
         />
@@ -407,15 +589,29 @@ export default function LoginForm() {
           placeholder="••••••••"
           value={values.password}
           onChange={(e) => handleChange("password", e.target.value)}
+          onFocus={() => handleElementFocus("Campo: Contraseña. Ingresa tu clave de acceso.")}
           error={errors.password}
           required
           rightElement={
             <button
               type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
+              onClick={() => {
+                setShowPassword((prev) => {
+                  const next = !prev;
+                  speakFeedback(next ? "Contraseña visible" : "Contraseña oculta", true);
+                  return next;
+                });
+              }}
+              onFocus={() =>
+                handleElementFocus(
+                  showPassword
+                    ? "Botón: Ocultar contraseña. Presiona Enter para ocultar los caracteres."
+                    : "Botón: Mostrar contraseña. Presiona Enter para visualizar los caracteres."
+                )
+              }
               aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
               aria-pressed={showPassword}
-              className="flex h-6 w-6 items-center justify-center text-slate-400 hover:text-slate-600 focus:outline-none focus-visible:outline-3 focus-visible:outline-[#f59e0b] focus-visible:outline-offset-2"
+              className="flex h-6 w-6 items-center justify-center text-slate-400 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded"
             >
               {showPassword ? <EyeOffIcon width={18} height={18} /> : <EyeIcon width={18} height={18} />}
             </button>
@@ -423,30 +619,36 @@ export default function LoginForm() {
         />
 
         <div className="flex items-center justify-between text-sm">
-          <label className="flex items-center gap-2 text-slate-600">
+          <label className="flex items-center gap-2 text-slate-600 cursor-pointer">
             <input
               type="checkbox"
               checked={values.remember}
               onChange={(e) => handleChange("remember", e.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 text-[#2563eb] focus:outline-none focus-visible:outline-3 focus-visible:outline-[#f59e0b] focus-visible:outline-offset-2"
+              onFocus={() => handleElementFocus("Casilla: Recordarme. Presiona Espacio para marcar o desmarcar.")}
+              className="h-4 w-4 rounded border-slate-300 text-[#2563eb] focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400"
             />
             Recordarme
           </label>
+
           <button
+            ref={forgotPasswordTriggerRef}
             type="button"
             onClick={() => {
               setForgotPasswordModal(true);
-              speakFeedback("Abre el formulario de recuperación de contraseña.");
+              speakFeedback("Abriendo ventana modal de recuperación de contraseña.", true);
             }}
-            className="font-medium text-[#2563eb] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded"
+            onFocus={() => handleElementFocus("Enlace: Olvidé mi contraseña. Presiona Enter para recuperar tu clave.")}
+            className="font-medium text-[#2563eb] hover:underline focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400 rounded px-1"
           >
             Olvidé mi contraseña
           </button>
         </div>
 
-        <Button type="submit" loading={submitting}>
-          Iniciar sesión
-        </Button>
+        <div onFocus={() => handleElementFocus("Botón: Iniciar sesión. Presiona Enter para enviar tus credenciales.")}>
+          <Button type="submit" loading={submitting}>
+            Iniciar sesión
+          </Button>
+        </div>
 
         <div className="flex items-center gap-3 text-xs text-slate-400">
           <span className="h-px flex-1 bg-slate-200" />
@@ -457,16 +659,23 @@ export default function LoginForm() {
         <button
           type="button"
           onClick={toggleVoiceInput}
+          onFocus={() =>
+            handleElementFocus(
+              isListening
+                ? "Botón: Desactivar comandos de voz. Presiona Enter o Alt + V."
+                : "Botón: Ingresar mediante voz. Presiona Enter o Alt + V para activar el micrófono."
+            )
+          }
           aria-pressed={isListening}
           aria-label={
             isListening
               ? "Desactivar comandos de voz (Alt + V)"
               : "Ingresar mediante voz o recuperar contraseña (Alt + V)"
           }
-          className={`flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 text-base font-semibold transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:ring-offset-2 ${
+        className={`flex items-center justify-center gap-2 rounded-2xl border-2 px-4 py-3.5 text-base font-bold transition-all hover:scale-[1.01] active:scale-[0.98] focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400 ${
             isListening
-              ? "border-rose-600 bg-rose-600 text-white ring-4 ring-rose-300 animate-pulse"
-              : "border-[#10b981] bg-white text-[#0f9d6e] hover:bg-emerald-50"
+              ? "border-rose-600 bg-rose-600 text-white ring-4 ring-rose-300 animate-pulse shadow-lg shadow-rose-600/30"
+              : "border-emerald-500 bg-emerald-50/50 text-emerald-800 hover:bg-emerald-100/70 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
           }`}
         >
           {isListening ? (
@@ -482,18 +691,23 @@ export default function LoginForm() {
 
         <p className="text-center text-sm text-slate-600">
           ¿No tienes cuenta?{" "}
-          <Link href="/register" className="font-semibold text-[#2563eb] underline underline-offset-2">
+          <Link
+            href="/register"
+            onFocus={() => handleElementFocus("Enlace: Regístrate aquí. Presiona Enter para crear una cuenta nueva.")}
+            className="font-semibold text-[#2563eb] underline underline-offset-2 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400 rounded px-1"
+          >
             Regístrate aquí
           </Link>
         </p>
       </form>
 
-      {/* Accessible Forgot Password Modal */}
+      {/* Accessible Forgot Password Modal with Keyboard Focus Trap & Escape support */}
       {forgotPasswordModal && (
         <div
           role="dialog"
           aria-modal="true"
           aria-labelledby="forgot-password-title"
+          aria-describedby="forgot-password-desc"
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm animate-in fade-in"
         >
           <div className="w-full max-w-md rounded-3xl border border-slate-700 bg-slate-900 p-6 text-slate-100 shadow-2xl">
@@ -506,8 +720,8 @@ export default function LoginForm() {
                   <h2 id="forgot-password-title" className="text-lg font-bold text-white">
                     Recuperar Contraseña
                   </h2>
-                  <p className="text-xs text-slate-400">
-                    Ingresa tu correo para recibir las instrucciones
+                  <p id="forgot-password-desc" className="text-xs text-slate-400">
+                    Ingresa tu correo para recibir las instrucciones (Presiona ESC para cerrar)
                   </p>
                 </div>
               </div>
@@ -517,9 +731,12 @@ export default function LoginForm() {
                   setForgotPasswordModal(false);
                   setResetSuccess(false);
                   setResetError("");
+                  speakFeedback("Ventana de recuperación cerrada.", true);
+                  forgotPasswordTriggerRef.current?.focus();
                 }}
-                aria-label="Cerrar ventana modal"
-                className="rounded-xl p-2 text-slate-400 hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                onFocus={() => handleElementFocus("Botón: Cerrar ventana modal.")}
+                aria-label="Cerrar ventana modal (ESC)"
+                className="rounded-xl p-2 text-slate-400 hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400"
               >
                 <XIcon width={20} height={20} />
               </button>
@@ -540,8 +757,11 @@ export default function LoginForm() {
                   onClick={() => {
                     setForgotPasswordModal(false);
                     setResetSuccess(false);
+                    speakFeedback("Volviendo al formulario de inicio de sesión.", true);
+                    forgotPasswordTriggerRef.current?.focus();
                   }}
-                  className="w-full rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                  onFocus={() => handleElementFocus("Botón: Entendido y Volver al Login. Presiona Enter.")}
+                  className="w-full rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-600 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400"
                 >
                   Entendido y Volver al Login
                 </button>
@@ -559,27 +779,35 @@ export default function LoginForm() {
                     Correo electrónico o usuario registrado:
                   </label>
                   <input
+                    ref={modalEmailInputRef}
                     id="reset-email"
                     type="email"
                     required
                     placeholder="ejemplo@openblind.org"
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                    onFocus={() => handleElementFocus("Campo en modal: Correo electrónico o usuario registrado.")}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400"
                   />
                 </div>
 
                 <div className="flex items-center gap-3 pt-2">
                   <button
                     type="button"
-                    onClick={() => setForgotPasswordModal(false)}
-                    className="flex-1 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-xs font-semibold text-slate-300 hover:bg-slate-700"
+                    onClick={() => {
+                      setForgotPasswordModal(false);
+                      speakFeedback("Recuperación cancelada.", true);
+                      forgotPasswordTriggerRef.current?.focus();
+                    }}
+                    onFocus={() => handleElementFocus("Botón: Cancelar recuperación.")}
+                    className="flex-1 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-xs font-semibold text-slate-300 hover:bg-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400"
                   >
-                    Cancelar
+                    Cancelar (ESC)
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 rounded-xl bg-[#2563eb] px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                    onFocus={() => handleElementFocus("Botón: Enviar instrucciones de recuperación.")}
+                    className="flex-1 rounded-xl bg-[#2563eb] px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-600 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400"
                   >
                     Enviar instrucciones
                   </button>

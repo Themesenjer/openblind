@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardHeader from "@/components/layout/DashboardHeader";
 import VoiceCommandButton from "@/components/dashboard/VoiceCommandButton";
+import { fetchWithAuth } from "@/lib/api";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -64,7 +65,6 @@ interface VideoTutorial {
   icon: any;
   iconBg: string;
   iconColor: string;
-  videoUrl?: string;
 }
 
 const VIDEO_TUTORIALS: VideoTutorial[] = [
@@ -103,10 +103,70 @@ const VIDEO_TUTORIALS: VideoTutorial[] = [
 ];
 
 export default function AyudaPage() {
-  // Accordion state: default open item 0 (matches prototype)
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [selectedVideo, setSelectedVideo] = useState<VideoTutorial | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [faqs, setFaqs] = useState<FAQItem[]>(FAQ_DATA);
+  const [chatInput, setChatInput] = useState("");
+  const [chatMessages, setChatMessages] = useState<Array<{ sender: "bot" | "user"; text: string }>>([
+    { sender: "bot", text: "¡Hola! Soy el asistente accesible de OpenBlind. ¿En qué podemos ayudarte hoy?" },
+  ]);
+  const [isSending, setIsSending] = useState(false);
+
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        const res = await fetchWithAuth("/api/help/faqs");
+        const json = await res.json();
+        if (json?.status === "Success" && Array.isArray(json.data)) {
+          setFaqs(json.data);
+        }
+      } catch (err) {
+        console.warn("Could not fetch FAQs from backend", err);
+      }
+    };
+    fetchFaqs();
+  }, []);
+
+  const handleSendChatMessage = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!chatInput.trim() || isSending) return;
+
+    const userMsg = chatInput.trim();
+    setChatInput("");
+    setChatMessages((prev) => [...prev, { sender: "user", text: userMsg }]);
+    setIsSending(true);
+
+    try {
+      const res = await fetchWithAuth("/api/help/support", {
+        method: "POST",
+        body: JSON.stringify({
+          nombre: "Usuario OpenBlind",
+          email: "usuario@openblind.org",
+          mensaje: userMsg,
+        }),
+      });
+      const data = await res.json();
+      const botResponse = data?.speechMessage || data?.message || "Hemos recibido tu mensaje de soporte.";
+
+      setChatMessages((prev) => [...prev, { sender: "bot", text: botResponse }]);
+
+      // Speak feedback via Web Speech API
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(botResponse);
+        utterance.lang = "es-ES";
+        window.speechSynthesis.speak(utterance);
+      }
+    } catch {
+      setChatMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: "Gracias por tu mensaje. El equipo de soporte técnico procesará tu solicitud." },
+      ]);
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const toggleFaq = (index: number) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
@@ -138,7 +198,7 @@ export default function AyudaPage() {
               </h2>
 
               <div className="space-y-3" role="tablist">
-                {FAQ_DATA.map((item, index) => {
+                {faqs.map((item, index) => {
                   const isOpen = openFaqIndex === index;
                   return (
                     <article
@@ -235,7 +295,6 @@ export default function AyudaPage() {
               </h2>
 
               <div className="space-y-3">
-                {/* Email Item */}
                 <a
                   href="mailto:soporte@openblind.app"
                   className="group flex items-center gap-3.5 rounded-xl bg-slate-50 p-3.5 transition-colors hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
@@ -253,7 +312,6 @@ export default function AyudaPage() {
                   </div>
                 </a>
 
-                {/* Phone Item */}
                 <a
                   href="tel:+18006736254"
                   className="group flex items-center gap-3.5 rounded-xl bg-slate-50 p-3.5 transition-colors hover:bg-emerald-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
@@ -400,26 +458,37 @@ export default function AyudaPage() {
             </div>
 
             <div className="mt-4 space-y-3 max-h-60 overflow-y-auto pr-1">
-              <div className="rounded-2xl bg-slate-800 p-3.5 text-xs text-slate-200">
-                ¡Hola! Soy el asistente accesible de OpenBlind. ¿En qué podemos ayudarte hoy?
-              </div>
+              {chatMessages.map((msg, i) => (
+                <div
+                  key={i}
+                  className={`rounded-2xl p-3.5 text-xs ${
+                    msg.sender === "user"
+                      ? "ml-auto bg-blue-600 text-white max-w-[80%]"
+                      : "mr-auto bg-slate-800 text-slate-200 max-w-[85%]"
+                  }`}
+                >
+                  {msg.text}
+                </div>
+              ))}
             </div>
 
-            <div className="mt-4 flex gap-2 pt-3 border-t border-slate-800">
+            <form onSubmit={handleSendChatMessage} className="mt-4 flex gap-2 pt-3 border-t border-slate-800">
               <input
                 type="text"
-                placeholder="Escribe tu mensaje o usa dictado..."
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Escribe tu mensaje para soporte..."
                 aria-label="Mensaje para el agente"
                 className="flex-1 rounded-xl bg-slate-800 border border-slate-700 px-3.5 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
               />
               <button
-                type="button"
-                onClick={() => setIsChatOpen(false)}
+                type="submit"
+                disabled={isSending}
                 className="rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
               >
-                Enviar
+                {isSending ? "Enviando..." : "Enviar"}
               </button>
-            </div>
+            </form>
           </div>
         </div>
       )}
