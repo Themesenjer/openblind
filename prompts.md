@@ -355,3 +355,35 @@ Cada vez que utilices una IA (ChatGPT, Gemini, Claude, etc.) para generar códig
   >   Ejecuta la verificación de tipos TypeScript (npx tsc --noEmit) y la compilación de producción Next.js (npm run build), solucionando cualquier error de firmas de funciones o tipos ausentes para garantizar 0 errores en build."
 
 ---
+
+### 01/09/2026 - Célula 1 (Frontend & Accesibilidad - Lectura de Instrucciones de Voz en Tiempo Real con SpeechSynthesis)
+* **Autor:** Stevens Tene
+* **Rol / Célula:** Célula 1 - Frontend & Accesibilidad (Líder)
+* **Herramienta IA:** Antigravity / Next.js
+* **Objetivo:** Garantizar la lectura automática en voz alta (speechSynthesis) al utilizar el instructivo de comandos de voz, la navegación asistida paso a paso y la práctica de dictado adaptativo.
+* **Prompt exacto utilizado:**
+  >  "ayudame a que hable cuando uso el de instrucciones para hablar "
+* **Resultado / Aplicación:**
+    1. Actualización de AccessibilityContext.tsx agregando el parámetro de reproducción forzada speakText(text, force = true) y optimización de carga de voces de navegador.
+    2. Implementación de anuncios de apertura y lectura interactiva al recibir foco (onFocus) o clic (onClick) en los botones de instrucciones del modal VoiceCommandButton.tsx.
+    3. Integración de pronunciación prioritaria de pasos de recorrido y alertas en MobilitySingleScreen.tsx.
+    4. Conexión de audio en el modal de dictado y práctica de voz en frontend/src/app/(app)/dashboard/modulos/[slug]/page.tsx.
+    5. Compilación del proyecto (next build) verificada y exitosa.
+
+---
+
+### 02/09/2026 - Célula 1 (Frontend & Accesibilidad - Pasos Hablados y Ubicaciones de Quito)
+* **Autor:** Stevens Tene
+* **Rol / Célula:** Célula 1 - Frontend & Accesibilidad (Líder)
+* **Herramienta IA:** Antigravity / Next.js
+* **Objetivo:** Ampliar la navegación asistida incorporando rutas habladas por voz sintetizada en puntos emblemáticos de Quito (Metro San Francisco, Plaza Grande, La Carolina, Quitumbe, Yavirac, El Panecillo) y permitir al usuario agregar pasos en cualquier posición de la ruta o crear nuevos destinos personalizados.
+* **Prompt exacto utilizado:**
+  >  "Construye la interfaz de movilidad asistida en Next.js para OpenBlind en MobilitySingleScreen.tsx que incluya:
+  >   1. Rutas predeterminadas con ubicaciones reales de Quito (Metro Quito Estación San Francisco, Plaza Grande, La Carolina, Terminal Quitumbe, Yavirac, El Panecillo) con instrucciones paso a paso parlantes por window.speechSynthesis.
+  >   2. Modal interactivo accesible para agregar un nuevo paso a la ruta activa (Alt + A) con título, dirección (adelante, izquierda, derecha, subir, bajar, llegada), distancia en pasos e instrucción hablada.
+  >   3. Modal para crear nuevos destinos en Quito (Alt + D) con botones de plantillas rápidas de puntos emblemáticos.
+  >   4. Panel desplegable de gestión de pasos para revisar la secuencia completa, navegar a un paso específico o eliminar pasos.
+  >   5. Persistencia en localStorage (openblind_mobility_custom_routes), restablecimiento de rutas por defecto y atajos de teclado Alt+N, Alt+B, Alt+A, Alt+D, Alt+E cumpliendo la norma WCAG 2.1 Nivel AA."
+* **Resultado / Aplicación:** Actualización de MobilitySingleScreen.tsx, VoiceCommandButton.tsx y icons.tsx. Verificación de compilación exitosa (npm run build con 0 errores) y documentación en walkthrough.md.
+
+---

@@ -173,6 +173,7 @@ Solicitamos incluir los siguientes escenarios en el plan de pruebas:
     ```
 
   * **Respuesta de Error**
+
            • 400 Bad Request: "Email y contraseña son obligatorios"
            • 401 Unauthorized: "Credenciales inválidas, el usuario no existe" / "Credenciales inválidas, contraseña incorrecta"
 
@@ -204,7 +205,8 @@ Solicitamos incluir los siguientes escenarios en el plan de pruebas:
      }
      ```
 
-  * **Respuesta de Error** 
+  * **Respuesta de Error**
+ 
            • 400 Bad Request: "Nombre, email y password son obligatorios"
            • 409 Conflict: "Ya existe un usuario con ese correo electrónico"
 
@@ -270,6 +272,7 @@ Solicitamos incluir los siguientes escenarios en el plan de pruebas:
 
 
   * **Respuesta de Error**
+
            • 400 Bad Request: "Nombre y email son obligatorios"
            • 404 Not Found: "Usuario no encontrado para actualizar"
 
@@ -296,6 +299,7 @@ Solicitamos incluir los siguientes escenarios en el plan de pruebas:
 
 
   * **Respuestas de Error:**
+
            • 400 Bad Request: "La contraseña actual y la nueva contraseña son obligatorias"
            • 401 Unauthorized: "La contraseña actual es incorrecta"
            • 404 Not Found: "Usuario no encontrado"
@@ -336,6 +340,7 @@ Solicitamos incluir los siguientes escenarios en el plan de pruebas:
         }
         ```
   * **Error(404 Not Found):**
+
        "usuario no encontrado"
 
 * **DELETE `http://localhost:3000/api/users/9`**
@@ -352,7 +357,8 @@ Solicitamos incluir los siguientes escenarios en el plan de pruebas:
            }
         }
         ```
-  * **Error (404 Not Found):** 
+  * **Error (404 Not Found):**
+ 
        "Usuario no encontrado para eliminar"
 
 
@@ -372,3 +378,23 @@ Solicitamos incluir los siguientes escenarios en el plan de pruebas:
 * **RNF-04: Seguridad y Privacidad**  
   Las credenciales e información de usuario procesadas en el módulo de autenticación deben transmitirse mediante canales cifrados (HTTPS) y no almacenarse en texto plano.
 
+---
+
+## 7. Resumen de lo desarrollado en el Frontend:
+
+* **De:** Stevens Tene (Líder Célula 1 - Frontend & Accesibilidad)
+* **Para:** Equipo de Célula 3 (QA, Specs & Documentación)
+* **Asunto:** Entrega de Módulo de Pasos Hablados y Ubicaciones de Quito para Documentación y Pruebas
+
+ Rutas e Instrucciones Habladas de Quito (Ecuador):
+ Incorporación de 5 rutas reales con voz parlante: Metro San Francisco ➔ Plaza Grande, La Carolina ➔ Jardín Botánico, Terminal Quitumbe ➔ Metro, Instituto Yavirac ➔ El Panecillo.
+ Agregar Pasos a Cualquier Ruta (+ Paso / Alt + A):
+ Formulario accesible para insertar pasos en cualquier posición (al final o tras el paso actual) con título, dirección (adelante, izquierda, derecha, subir, bajar, llegada), distancia y voz.
+ Creación de Destinos en Quito (+ Destino Quito / Alt + D):
+ Permite definir cualquier lugar a donde el usuario quiera ir y cuenta con plantillas rápidas de Quito (ej: Basílica del Voto Nacional, Plaza Foch).
+ Panel de Gestión de Pasos & Persistencia:
+ Desplegable para ver todos los pasos, saltar a un paso o eliminarlo. Persistencia automática en localStorage (openblind_mobility_custom_routes).
+ Estándar de Accesibilidad Universal (WCAG 2.1 Level AA):
+ Anuncios en tiempo real por window.speechSynthesis, región viva aria-live="assertive", anillos de enfoque visibles de alto contraste (focus-visible:ring-4 focus-visible:ring-amber-400) y atajos de teclado (Alt + N, Alt + B, Alt + A, Alt + D, Alt + E).
+
+---
