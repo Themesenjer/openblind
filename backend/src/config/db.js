@@ -7,22 +7,34 @@ const cleanEnv = (val, fallback = '') => {
   return String(val).replace(/["'“”]/g, '').trim();
 };
 
+const connectionString = cleanEnv(process.env.DATABASE_URL, '');
 const dbName = cleanEnv(process.env.DB_NAME, 'openblind_db');
 const dbUser = cleanEnv(process.env.DB_USER, 'postgres');
 const dbHost = cleanEnv(process.env.DB_HOST, 'localhost');
 const dbPassword = cleanEnv(process.env.DB_PASSWORD, '');
 const dbPort = Number(cleanEnv(process.env.DB_PORT, '5432')) || 5432;
 
-console.log(`🔌 Conectando a BD: [${dbName}] como usuario: [${dbUser}]`);
+const poolConfig = connectionString
+  ? {
+      connectionString,
+      ssl: { rejectUnauthorized: false },
+    }
+  : {
+      user: dbUser,
+      host: dbHost,
+      database: dbName,
+      password: dbPassword,
+      port: dbPort,
+      ssl: { rejectUnauthorized: false },
+    };
 
-const pool = new Pool({
-  user: dbUser,
-  host: dbHost,
-  database: dbName,
-  password: dbPassword,
-  port: dbPort,
-  ssl: { rejectUnauthorized: false },
-});
+console.log(
+  connectionString
+    ? `🔌 Conectando a BD mediante DATABASE_URL`
+    : `🔌 Conectando a BD: [${dbName}] como usuario: [${dbUser}]`
+);
+
+const pool = new Pool(poolConfig);
 
 pool.on('error', (err) => {
   console.error('Error inesperado en el pool de PostgreSQL:', err);
@@ -32,7 +44,7 @@ pool.connect((err, client, release) => {
   if (err) {
     return console.error('❌ Error al conectar a PostgreSQL:', err.message);
   }
-  console.log(`✅ Conexión exitosa a la base de datos "${dbName}"`);
+  console.log(`✅ Conexión exitosa a la base de datos PostgreSQL`);
   release();
 });
 
