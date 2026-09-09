@@ -1,9 +1,10 @@
-/** @type {import('next').NextConfig} */
+/** @type {import('next').NextType} */
 const nextConfig = {
   output: 'export',
-  images: { unoptimized: true },
-  trailingSlash: false,
-  assetPrefix: './',
+  trailingSlash: true, // <--- OBLIGATORIO: Fuerza a que cada página genere su propia carpeta con un index.html
+  images: {
+    unoptimized: true,
+  },
 };
 
 module.exports = nextConfig;
